@@ -192,4 +192,73 @@ final class PluginTest extends TestCase {
 
 		$this->assertFalse( Settings::is_enabled() );
 	}
+
+	public function test_the_migration_reads_the_prefix_of_wp_optimizer(): void {
+		// In two pieces, so no rename pass can rewrite the expectation along
+		// with the code.
+		$this->assertSame( 'r' . 'wpo_', Install::LEGACY_PREFIX, 'The prefix of RHINNO IT - WP Optimizer, written out.' );
+		$this->assertNotSame( Settings::OPTION_PREFIX, Install::LEGACY_PREFIX, 'Renamed to this plugin\'s own prefix, the copy would read every option into itself.' );
+	}
+
+	public function test_the_settings_of_wp_optimizer_are_carried_over(): void {
+		// A shop that ran RHINNO IT - WP Optimizer, which this plugin replaces.
+		// A new slug is a new plugin to WordPress, so without the copy every
+		// site would start over from the defaults.
+		WP_Stub::$options = array(
+			'rwpo_enabled'          => 'no',
+			'rwpo_srcset_prune'     => 'no',
+			'rwpo_cart_fragments'   => 'no',
+			'rwpo_express_checkout' => 'yes',
+			'rwpo_version'          => '2.8.13',
+			'rwpo_page_cache_state' => array(
+				'last'         => 1,
+				'failed_until' => 0,
+			),
+		);
+
+		Install::activate();
+
+		$this->assertSame( 'no', WP_Stub::$options['ropt_enabled'], 'A shop that had switched WP Optimizer off finds this one off too.' );
+		$this->assertSame( 'no', WP_Stub::$options['ropt_srcset_prune'], 'An optimization switched off there stays off here.' );
+		$this->assertSame( 'no', WP_Stub::$options['ropt_cart_fragments'], 'The WooCommerce and Porto cards are carried over too.' );
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_global_styles'], 'An option missing there gets its default.' );
+		$this->assertArrayNotHasKey( 'ropt_express_checkout', WP_Stub::$options, 'The Customizer\'s switches stay with the Customizer.' );
+		$this->assertSame( ROPT_VERSION, WP_Stub::$options[ Install::VERSION_OPTION ], 'The version WP Optimizer ran is not a setting.' );
+		$this->assertArrayNotHasKey( 'ropt_page_cache_state', WP_Stub::$options, 'Nor is when its last cPanel clear ran.' );
+	}
+
+	public function test_the_migration_never_overwrites_a_value_set_here(): void {
+		WP_Stub::$options = array(
+			'rwpo_srcset_prune' => 'no',
+			'ropt_srcset_prune' => 'yes',
+		);
+
+		Install::activate();
+
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_srcset_prune'], 'An older value from WP Optimizer must not win.' );
+	}
+
+	public function test_the_migration_copies_and_never_deletes(): void {
+		WP_Stub::$options = array( 'rwpo_srcset_prune' => 'no' );
+
+		Install::activate();
+
+		// WP Optimizer may still be active; its own uninstaller owns these.
+		$this->assertSame( 'no', WP_Stub::$options['rwpo_srcset_prune'] );
+		$this->assertStringNotContainsString(
+			"'" . Install::LEGACY_PREFIX,
+			(string) file_get_contents( dirname( __DIR__ ) . '/uninstall.php' ),
+			'Deleting them here would reset WP Optimizer on a site that still runs it.'
+		);
+	}
+
+	public function test_a_site_seeded_on_its_first_dashboard_gets_the_migration_too(): void {
+		// A network activation seeds only the current site; the others are
+		// seeded by check_version(), so the copy belongs to the seeding.
+		WP_Stub::$options = array( 'rwpo_srcset_prune' => 'no' );
+
+		Install::check_version();
+
+		$this->assertSame( 'no', WP_Stub::$options['ropt_srcset_prune'] );
+	}
 }

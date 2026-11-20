@@ -45,6 +45,10 @@ msgstr ""
 msgid "Optimizer is running, but its WooCommerce half needs WooCommerce %s or higher."
 msgstr ""
 
+#: includes/class-plugin.php
+msgid "Optimizer waits until WP Optimizer is deactivated, and does nothing until then."
+msgstr ""
+
 #: includes/class-settings.php
 msgid "Apply the optimizations"
 msgstr ""

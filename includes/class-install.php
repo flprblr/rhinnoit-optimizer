@@ -32,6 +32,14 @@ final class Install {
 	const string DIRTY_HOOK = 'rhinnoit_page_cache_dirty';
 
 	/**
+	 * Option prefix of the plugin this one replaces, RHINNO IT - WP Optimizer.
+	 *
+	 * Written out rather than derived, like Plugin::LEGACY_CONSTANT: it names
+	 * that plugin, not this one, so it must NOT follow a rename.
+	 */
+	const string LEGACY_PREFIX = 'rwpo_';
+
+	/**
 	 * Runs on activation.
 	 *
 	 * Seeds the site it runs on. A network activation on multisite seeds only
@@ -92,6 +100,8 @@ final class Install {
 	 * @return void
 	 */
 	private static function seed_defaults(): void {
+		// First: after the defaults, add_option() would keep those and copy nothing.
+		self::migrate_legacy_options();
 		self::inherit_split_options();
 
 		foreach ( Settings::defaults() as $option => $value ) {
@@ -99,6 +109,40 @@ final class Install {
 		}
 
 		update_option( self::VERSION_OPTION, ROPT_VERSION );
+	}
+
+	/**
+	 * Carries the settings of the plugin this one replaces.
+	 *
+	 * RHINNO IT - WP Optimizer, with the rwpo_ prefix, was split in two: its
+	 * optimizations came here and the rest went to RHINNO IT - Customizer. A
+	 * new slug means WordPress sees a new plugin, so without this every site
+	 * would start over from the defaults. Only the ids this plugin declares
+	 * are read, so the Customizer's switches stay with the Customizer. It
+	 * copies, it never moves: WP Optimizer keeps its own options until its
+	 * own uninstaller removes them, which is also what makes deleting it from
+	 * the admin safe - this plugin's prefix is different, so that uninstaller
+	 * cannot reach these.
+	 *
+	 * A value somebody set here is never overwritten by an older one from
+	 * there, and it is add_option() that guarantees it: it writes nothing when
+	 * the option already exists.
+	 *
+	 * @return void
+	 */
+	private static function migrate_legacy_options(): void {
+		$missing = new \stdClass();
+
+		foreach ( Settings::option_ids() as $option ) {
+			$legacy = self::LEGACY_PREFIX . substr( $option, strlen( Settings::OPTION_PREFIX ) );
+			$value  = get_option( $legacy, $missing );
+
+			if ( $value === $missing ) {
+				continue;
+			}
+
+			add_option( $option, $value );
+		}
 	}
 
 	/**

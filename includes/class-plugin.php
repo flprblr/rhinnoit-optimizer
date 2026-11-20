@@ -30,6 +30,16 @@ final class Plugin {
 	const string MIN_WC_VERSION = '8.0';
 
 	/**
+	 * Constant defined by the plugin this one replaces, RHINNO IT - WP Optimizer.
+	 *
+	 * Written out rather than derived, like Install::LEGACY_PREFIX: it names
+	 * that plugin, not this one, so it must NOT follow a rename. Renamed to
+	 * this plugin's own constant, which is always defined, it would keep every
+	 * site waiting.
+	 */
+	const string LEGACY_CONSTANT = 'RWPO_VERSION';
+
+	/**
 	 * Shared instance.
 	 *
 	 * @var Plugin|null
@@ -39,12 +49,27 @@ final class Plugin {
 	/**
 	 * Boots the plugin once.
 	 *
+	 * Not while WP Optimizer is active: this plugin replaces part of it, and
+	 * with both running every optimization would run twice. Until it is
+	 * deactivated this one only says it is waiting: no service, no menu, no
+	 * version check. The activation hook does not come through here, so the
+	 * copy of WP Optimizer's settings still runs beside it, which is when the
+	 * hand-over makes it. The question is asked here, on plugins_loaded, and
+	 * never at file scope: WordPress loads the active plugins sorted by path,
+	 * so this one loads before rhinnoit-wp-optimizer/ defines its constant.
+	 *
 	 * Returns nothing on purpose: it runs as an action callback, and WordPress
 	 * discards whatever an action returns.
 	 *
 	 * @return void
 	 */
 	public static function boot(): void {
+		if ( defined( self::LEGACY_CONSTANT ) ) {
+			add_action( 'admin_notices', array( self::class, 'render_waiting_notice' ) );
+
+			return;
+		}
+
 		if ( null === self::$instance ) {
 			self::$instance = new self();
 		}
@@ -138,6 +163,28 @@ final class Plugin {
 					self::MIN_WC_VERSION
 				)
 			)
+		);
+	}
+
+	/**
+	 * Shows the notice while WP Optimizer is active and this plugin waits.
+	 *
+	 * It loads the text domain itself: nothing else of the plugin boots in
+	 * the meantime, the init callback that loads it included, and the notices
+	 * print well after init, where loading it is allowed.
+	 *
+	 * @return void
+	 */
+	public static function render_waiting_notice(): void {
+		if ( ! current_user_can( 'activate_plugins' ) ) {
+			return;
+		}
+
+		load_plugin_textdomain( 'rhinnoit-optimizer', false, dirname( ROPT_BASENAME ) . '/languages' );
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p></div>',
+			esc_html__( 'Optimizer waits until WP Optimizer is deactivated, and does nothing until then.', 'rhinnoit-optimizer' )
 		);
 	}
 

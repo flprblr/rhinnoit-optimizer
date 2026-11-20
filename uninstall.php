@@ -46,6 +46,13 @@ foreach ( $ropt_options as $ropt_option ) {
 }
 
 /*
+ * The rwpo_ options of RHINNO IT - WP Optimizer, the plugin this one
+ * replaces, are left alone on purpose. They belong to that plugin, whose own
+ * uninstaller removes them; deleting them here would reset it on a site that
+ * still runs it.
+ */
+
+/*
  * One throttle transient per asset bundle. A plugin that adds an entry point
  * adds its key here too: Assets appends the entry point name to the prefix.
  */

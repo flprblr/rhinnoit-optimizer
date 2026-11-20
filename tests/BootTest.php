@@ -4,7 +4,8 @@
  *
  * The two unsupported cases live in their own files and their own processes:
  * the gate reads a constant, and a constant cannot be changed once the suite
- * has defined it.
+ * has defined it. So does the case beside WP Optimizer: this process never
+ * defines its constant, so here the plugin has to boot in full.
  *
  * @package RhinnoIT\Optimizer
  */
@@ -60,6 +61,15 @@ final class BootTest extends TestCase {
 		}
 
 		$this->assertNotContains( 'admin_notices', WP_Stub::$hooks, 'Nothing is wrong, so nothing is announced.' );
+	}
+
+	public function test_the_guard_waits_for_wp_optimizer_and_not_for_this_plugin(): void {
+		// In two pieces, so no rename pass can rewrite the expectation along
+		// with the code.
+		$this->assertSame( 'R' . 'WPO_VERSION', Plugin::LEGACY_CONSTANT, 'The constant WP Optimizer\'s main file defines, written out.' );
+		// This plugin's own constant is always defined, in this process as on
+		// every site, and this process never defines WP Optimizer's.
+		$this->assertFalse( defined( Plugin::LEGACY_CONSTANT ), 'Renamed to this plugin\'s own constant, the guard would keep every site waiting.' );
 	}
 
 	public function test_the_unsupported_notice_names_the_minimum_and_escapes_itself(): void {

@@ -51,6 +51,11 @@ define( 'YEAR_IN_SECONDS', 31536000 );
 if ( '1' === getenv( 'ROPT_TESTS_KINSTA' ) ) {
 	define( 'KINSTAMU_VERSION', '3.7.0' );
 }
+
+// WP Optimizer, the plugin this one replaces, still active: ROPT_TESTS_WP_OPTIMIZER=1.
+if ( '1' === getenv( 'ROPT_TESTS_WP_OPTIMIZER' ) ) {
+	define( 'RWPO_VERSION', '2.8.13' );
+}
 define( 'WP_DEBUG', false );
 
 // Smush, for the cases that run with it loaded: ROPT_TESTS_SMUSH=1, or =api to load its Settings class too.
@@ -110,6 +115,8 @@ final class WP_Stub {
 	 * @var array<int, array{0: string, 1: string|null, 2: string, 3: int}>
 	 */
 	public static array $registered = array();
+	/** @var array<string, string> Text domain => languages path of each load_plugin_textdomain() call. */
+	public static array $textdomains = array();
 	public static bool $is_admin = true;
 	/** @var array<int, string> */
 	public static array $removed = array();
@@ -241,6 +248,7 @@ final class WP_Stub {
 		self::$page_hooks = array();
 		self::$page_type  = 'product';
 
+		self::$textdomains        = array();
 		self::$is_admin           = true;
 		self::$removed            = array();
 		self::$removed_priorities = array();
@@ -376,7 +384,7 @@ function wp_basename( $path ) { return basename( $path ); }
 function wp_upload_dir() { return array( 'baseurl' => WP_Stub::$upload_baseurl, 'basedir' => WP_Stub::$upload_basedir ); }
 function get_attached_file( $id ) { return WP_Stub::$attached_files[ $id ] ?? false; }
 function is_admin() { return WP_Stub::$is_admin; }
-function load_plugin_textdomain( $domain, $abs, $path ) { return true; }
+function load_plugin_textdomain( $domain, $abs, $path ) { WP_Stub::$textdomains[ (string) $domain ] = (string) $path; return true; }
 
 function get_option( $key, $default_value = false ) { return WP_Stub::$options[ $key ] ?? $default_value; }
 function add_option( $key, $value ) { WP_Stub::$options[ $key ] ??= $value; return true; }
