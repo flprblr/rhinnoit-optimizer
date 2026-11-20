@@ -17,8 +17,8 @@ msgid "RHINNO IT - Optimizer"
 msgstr "RHINNO IT - Optimizer"
 
 #. Description of the plugin
-msgid "Base template for private WordPress plugins, with a WooCommerce half when WooCommerce is active."
-msgstr "Plantilla base para plugins privados de WordPress, con una mitad para WooCommerce cuando WooCommerce está activo."
+msgid "Makes pages lighter and faster to deliver, and clears the page cache after changes."
+msgstr "Hace que las páginas pesen menos y lleguen antes, y borra la caché de página al hacer cambios."
 
 #. Author of the plugin
 msgid "RHINNO IT"

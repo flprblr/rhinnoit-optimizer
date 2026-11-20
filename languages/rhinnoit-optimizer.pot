@@ -12,7 +12,7 @@ msgid "RHINNO IT - Optimizer"
 msgstr ""
 
 #. Description of the plugin
-msgid "Base template for private WordPress plugins, with a WooCommerce half when WooCommerce is active."
+msgid "Makes pages lighter and faster to deliver, and clears the page cache after changes."
 msgstr ""
 
 #. Author of the plugin

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:          RHINNO IT - Optimizer
- * Description:          Base template for private WordPress plugins, with a WooCommerce half when WooCommerce is active.
+ * Description:          Makes pages lighter and faster to deliver, and clears the page cache after changes.
  * Version:              1.0.0
  * Requires at least:    6.5
  * Requires PHP:         8.3
