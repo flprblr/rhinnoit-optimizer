@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+#
+# Every check, then the zip, before a push leaves the machine.
+#
+# Enable it once per clone -- hooks are not versioned by git itself, only this
+# directory is:
+#
+#     git config core.hooksPath .githooks
+#
+# Skip it for a push that cannot break anything:
+#
+#     git push --no-verify
+#
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+ZERO='0000000000000000000000000000000000000000'
+REFS=0
+DELETIONS=0
+
+# git hands the refs being pushed on stdin. A deletion carries an all-zero
+# local sha and sends no code anywhere, so there is nothing to check. No input
+# at all is not a reason to skip: the checks run in that case too.
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+	REFS=$(( REFS + 1 ))
+
+	if [ "${local_sha:-}" = "$ZERO" ]; then
+		DELETIONS=$(( DELETIONS + 1 ))
+	fi
+done
+
+if [ "$REFS" -gt 0 ] && [ "$REFS" -eq "$DELETIONS" ]; then
+	echo "Nothing but branch deletions in this push." >&2
+	exit 0
+fi
+
+# The checks and the zip both read the working tree, not the refs being pushed,
+# so a dirty tree makes both of them lie: a red commit rides out under a green
+# tree, and the zip left in dist/ carries uncommitted and untracked code under
+# the committed version number. Refuse instead, so that what was checked is
+# what is leaving.
+if [ -n "$(git status --porcelain)" ]; then
+	cat >&2 <<-'DIRTY'
+	Working tree is dirty. The checks and the zip read the tree, not the
+	commits being pushed, so neither would describe what leaves the machine.
+	Commit, stash or clean up first - or push with --no-verify.
+	DIRTY
+	exit 1
+fi
+
+exec bin/release.sh

@@ -1,0 +1,224 @@
+/*
+ * Plugin settings screen.
+ *
+ * The card-and-row layout of @wordpress/components, the one Site Health and
+ * the newer WooCommerce screens use, drawn over the plain markup
+ * Settings_Page prints: a card per section, a row per setting with its text
+ * on the left and its control on the right, and checkboxes drawn as the
+ * component's toggle; a multicheck is a run of those rows under its label.
+ * Everything is scoped under .ropt-settings, which also lifts these rules
+ * above core's own h2, p, label and input[type="checkbox"] rules, including
+ * the checkmark core draws in ::before. Without this sheet the form is plain
+ * labels and checkboxes that work the same.
+ */
+
+$ropt-accent: var(--wp-admin-theme-color, #2271b1);
+$ropt-gray-900: #1e1e1e;
+$ropt-gray-700: #757575;
+$ropt-gray-200: #e0e0e0;
+$ropt-gray-100: #f0f0f0;
+
+.ropt-settings {
+	max-width: 760px;
+	margin-top: 20px;
+
+	.ropt-card {
+		margin: 0 0 24px;
+		border: 1px solid $ropt-gray-200;
+		border-radius: 8px;
+		background: #fff;
+	}
+
+	.ropt-card__title {
+		margin: 0;
+		padding: 16px 24px;
+		border-bottom: 1px solid $ropt-gray-100;
+		color: $ropt-gray-900;
+		font-size: 15px;
+		font-weight: 600;
+		line-height: 1.4;
+	}
+
+	.ropt-card__desc {
+		margin: 0;
+		padding: 12px 24px 0;
+		color: $ropt-gray-700;
+	}
+
+	.ropt-card__group {
+		margin: 0;
+		padding: 20px 24px 4px;
+		color: $ropt-gray-700;
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.4;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+	}
+
+	// A multicheck: the group label above, one line saying what the list is
+	// for, then one row per choice.
+	.ropt-group__desc {
+		margin: 0;
+		padding: 0 24px 4px;
+		color: $ropt-gray-700;
+		font-size: 13px;
+		line-height: 1.5;
+	}
+
+	.ropt-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px;
+		padding: 14px 24px;
+	}
+
+	.ropt-row + .ropt-row {
+		border-top: 1px solid $ropt-gray-100;
+	}
+
+	// The master switch sits alone in a card with no title.
+	.ropt-card > .ropt-row:only-child {
+		padding-top: 18px;
+		padding-bottom: 18px;
+	}
+
+	.ropt-row__text {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.ropt-row__label {
+		display: block;
+		color: $ropt-gray-900;
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 1.4;
+		vertical-align: baseline;
+		cursor: pointer;
+	}
+
+	.ropt-row__desc {
+		margin: 2px 0 0;
+		color: $ropt-gray-700;
+		font-size: 13px;
+		line-height: 1.5;
+	}
+
+	.ropt-row__control {
+		flex: none;
+	}
+
+	// With the master switch off nothing below applies, so it reads as off.
+	// Still clickable: a choice made now takes effect when it comes back on.
+	// Faded no further than 0.8, which keeps the descriptions at 4.5:1.
+	&:has(.ropt-switch[name="ropt_enabled"]:not(:checked)) .ropt-card ~ .ropt-card {
+		opacity: 0.8;
+		transition: opacity 0.2s ease;
+	}
+
+	.submit {
+		margin: 0;
+		padding: 0;
+	}
+
+	@media (max-width: 600px) {
+
+		.ropt-card__title,
+		.ropt-card__group,
+		.ropt-group__desc,
+		.ropt-row {
+			padding-right: 16px;
+			padding-left: 16px;
+		}
+
+		.ropt-row {
+			gap: 16px;
+		}
+	}
+}
+
+.ropt-settings .ropt-switch[type="checkbox"] {
+	position: relative;
+	width: 36px;
+	min-width: 36px;
+	height: 18px;
+	margin: 0;
+	border: 1px solid $ropt-gray-900;
+	border-radius: 9px;
+	background: #fff;
+	box-shadow: none;
+	vertical-align: middle;
+	cursor: pointer;
+	transition: background-color 0.2s ease, border-color 0.2s ease;
+
+	&::before {
+		content: "";
+		position: absolute;
+		top: 2px;
+		left: 2px;
+		width: 12px;
+		height: 12px;
+		margin: 0;
+		border-radius: 50%;
+		background: $ropt-gray-900;
+		transition: transform 0.2s ease;
+	}
+
+	&:checked {
+		border-color: $ropt-accent;
+		background: $ropt-accent;
+	}
+
+	&:checked::before {
+		content: "";
+		width: 12px;
+		height: 12px;
+		margin: 0;
+		background: #fff;
+		transform: translateX(18px);
+	}
+
+	&:focus {
+		border-color: $ropt-accent;
+		outline: 2px solid transparent;
+		box-shadow: 0 0 0 2px #fff, 0 0 0 4px $ropt-accent;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		transition: none;
+
+		&::before {
+			transition: none;
+		}
+	}
+
+	// High contrast replaces every colour above with the same system colour,
+	// so on and off would look identical. Paint the switch with system colours
+	// instead, the way the component's own toggle does.
+	@media (forced-colors: active) {
+		border-color: buttontext;
+		background: canvas;
+		forced-color-adjust: none;
+
+		&::before {
+			background: buttontext;
+		}
+
+		&:checked {
+			border-color: highlight;
+			background: highlight;
+		}
+
+		&:checked::before {
+			background: highlighttext;
+		}
+
+		&:focus {
+			outline: 2px solid highlight;
+			outline-offset: 2px;
+			box-shadow: none;
+		}
+	}
+}

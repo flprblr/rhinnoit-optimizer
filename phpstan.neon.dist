@@ -1,0 +1,28 @@
+includes:
+	- vendor/szepeviktor/phpstan-wordpress/extension.neon
+parameters:
+	level: 8
+	paths:
+		- .
+	bootstrapFiles:
+		- phpstan-bootstrap.php
+	excludePaths:
+		- build (?)
+		- phpstan-bootstrap.php
+		- node_modules (?)
+		- tests
+		- vendor (?)
+	scanFiles:
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+	# The WooCommerce stubs describe the happy path: WC()->cart is typed WC_Cart
+	# and wc_get_checkout_url() string, so PHPStan calls a guard against a null
+	# cart or a missing checkout page dead code. On a storefront both are real --
+	# WC()->cart is null before wp_loaded and on requests with no session, and
+	# dropping that check is a fatal on every add to cart. Those types come from
+	# PHPDoc, so this stops PHPStan treating them as guarantees. Everything
+	# inferred from the code itself is still reported.
+	treatPhpDocTypesAsCertain: false
+	# The stubs pin WC_VERSION to '0.0.0', which would make the version check
+	# look permanently false. This tells PHPStan the value is only known at run time.
+	dynamicConstantNames:
+		- WC_VERSION

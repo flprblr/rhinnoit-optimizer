@@ -1,0 +1,111 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: RHINNO IT - Optimizer 1.0.0\n"
+"Report-Msgid-Bugs-To: dev@rhinnoit.cloud\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-10-01 00:00+0000\n"
+"Last-Translator: RHINNO IT <dev@rhinnoit.cloud>\n"
+"Language-Team: Spanish (Chile)\n"
+"Language: es_CL\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: rhinnoit-optimizer\n"
+
+#. Plugin Name of the plugin
+msgid "RHINNO IT - Optimizer"
+msgstr "RHINNO IT - Optimizer"
+
+#. Description of the plugin
+msgid "Base template for private WordPress plugins, with a WooCommerce half when WooCommerce is active."
+msgstr "Plantilla base para plugins privados de WordPress, con una mitad para WooCommerce cuando WooCommerce está activo."
+
+#. Author of the plugin
+msgid "RHINNO IT"
+msgstr "RHINNO IT"
+
+#. Author URI of the plugin
+msgid "mailto:dev@rhinnoit.cloud"
+msgstr "mailto:dev@rhinnoit.cloud"
+
+#: includes/admin/class-plugin-links.php
+msgid "Settings"
+msgstr "Ajustes"
+
+#: includes/admin/class-settings-page.php
+msgid "You are not allowed to change these settings."
+msgstr "No tienes permiso para cambiar estos ajustes."
+
+#: includes/admin/class-settings-page.php
+msgid "The plugin was updated while this screen was open, so nothing was saved. Check the settings below and save again."
+msgstr "El plugin se actualizó mientras esta pantalla estaba abierta, así que no se guardó nada. Revisa los ajustes y vuelve a guardar."
+
+#: includes/admin/class-settings-page.php
+msgid "Settings saved."
+msgstr "Ajustes guardados."
+
+#. translators: %s: minimum WooCommerce version.
+#: includes/class-plugin.php
+#, php-format
+msgid "Optimizer is running, but its WooCommerce half needs WooCommerce %s or higher."
+msgstr "Optimizer está funcionando, pero su mitad de WooCommerce necesita WooCommerce %s o superior."
+
+#: includes/class-settings.php
+msgid "Enable"
+msgstr "Activar"
+
+#: includes/class-settings.php
+msgid "If you turn it off, everything below stops, without deactivating the plugin."
+msgstr "Si lo apagas, todo lo de abajo se detiene, sin desactivar el plugin."
+
+#: includes/class-settings.php
+msgid "WordPress"
+msgstr "WordPress"
+
+#: includes/class-settings.php
+msgid "Load the script on"
+msgstr "Cargar el script en"
+
+#: includes/class-settings.php
+msgid "The pages WordPress itself serves. While both lists are empty the script loads nowhere. Every page of the site wins over everything else, and covers what neither list names: archives, search, custom post types."
+msgstr "Las páginas que sirve el propio WordPress. Mientras ambas listas estén vacías, el script no se carga en ninguna parte. “Todas las páginas del sitio” se impone a todo lo demás y cubre lo que ninguna lista nombra: archivos, búsquedas y tipos de contenido personalizados."
+
+#: includes/class-settings.php
+msgid "WooCommerce"
+msgstr "WooCommerce"
+
+#: includes/class-settings.php
+msgid "The screens WooCommerce owns."
+msgstr "Las pantallas propias de WooCommerce."
+
+#: includes/class-settings.php
+msgid "Shop and category pages"
+msgstr "Tienda y páginas de categoría"
+
+#: includes/class-settings.php
+msgid "Single product"
+msgstr "Producto individual"
+
+#: includes/class-settings.php
+msgid "Cart"
+msgstr "Carrito"
+
+#: includes/class-settings.php
+msgid "Checkout"
+msgstr "Finalizar compra"
+
+#: includes/class-settings.php
+msgid "My account"
+msgstr "Mi cuenta"
+
+#: includes/class-settings.php
+msgid "Blog posts"
+msgstr "Entradas del blog"
+
+#: includes/class-settings.php
+msgid "Pages, WooCommerce ones aside"
+msgstr "Páginas, salvo las de WooCommerce"
+
+#: includes/class-settings.php
+msgid "Every page of the site"
+msgstr "Todas las páginas del sitio"

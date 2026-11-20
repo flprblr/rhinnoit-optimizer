@@ -1,0 +1,29 @@
+{
+	"name": "rhinnoit/optimizer",
+	"description": "Base template for private WordPress plugins, with a WooCommerce half when WooCommerce is active.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=8.3"
+	},
+	"require-dev": {
+		"php-stubs/woocommerce-stubs": "^9.0",
+		"phpstan/phpstan": "^2.0",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"woocommerce/woocommerce-sniffs": "^1.0",
+		"phpunit/phpunit": "^11.5"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"analyse": "phpstan analyse --memory-limit=1G",
+		"dist": "bin/build-zip.sh",
+		"lint": "phpcs",
+		"lint:fix": "phpcbf",
+		"release": "bin/release.sh",
+		"test": "phpunit"
+	}
+}

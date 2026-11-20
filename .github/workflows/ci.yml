@@ -1,0 +1,78 @@
+name: CI
+
+# Only on push: on a private repository Actions minutes are metered, and a
+# solo workflow does not need the duplicate run that pull_request adds. Add
+# `pull_request:` below if the repository starts taking PRs.
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Supersede in-flight runs of the same branch instead of paying for both.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  php:
+    name: PHP
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - run: composer install --no-interaction --no-progress --prefer-dist
+
+      - run: composer lint
+      - run: composer analyse
+      - run: composer test
+
+  js:
+    name: JavaScript
+    # The PHP checks gate the packaging, the way bin/release.sh gates it: this
+    # job builds the zip and uploads it, and an installable off a red tree is
+    # worse than no installable. The cost is that the JS linters stay quiet
+    # until PHP is green, which is the order release.sh already imposes.
+    needs: php
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint:js
+      - run: npm run lint:css
+      - run: npm run build
+
+      # Package too: this job is the only one with a build/, and the zip is
+      # what a shop actually receives. It caught nothing before because
+      # nothing ever ran it outside composer release.
+      - run: bin/build-zip.sh
+
+      # The installable, straight off the run page: no clone, no node, no
+      # build. Two weeks is plenty for something regenerated on every push,
+      # and artifacts bill against private storage.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: dist/*.zip
+          if-no-files-found: error
+          retention-days: 14
