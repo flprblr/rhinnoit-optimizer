@@ -168,11 +168,10 @@ UI strings and documentation.
   inherits the environment the class sets.
 - `ROPT_TESTS_KINSTA=1` makes the bootstrap define `KINSTAMU_VERSION`, for the
   cases that run on Kinsta in their own process (`BootOnKinstaTest`,
-  `CartFragmentsTest`, `KinstaDefaultsTest`, `PageCacheOnKinstaTest`,
-  `SettingsOnKinstaTest`, `SettingsWithoutPortoTest`,
-  `ShopCacheOnKinstaTest`); `KinstaNamespacedConstantTest` and
-  `HookArityTest`'s Kinsta case define a Kinsta constant in a process of their
-  own. `ROPT_TESTS_SMUSH=1` defines `WP_SMUSH_VERSION` the same way
+  `CartFragmentsTest`, `PageCacheOnKinstaTest`, `SettingsOnKinstaTest`,
+  `SettingsWithoutPortoTest`, `ShopCacheOnKinstaTest`);
+  `KinstaNamespacedConstantTest`, `KinstaDefaultsTest` and `HookArityTest`'s
+  Kinsta case define a Kinsta constant in a process of their own. `ROPT_TESTS_SMUSH=1` defines `WP_SMUSH_VERSION` the same way
   (`ViewportHeroWithSmushTest`), and `ROPT_TESTS_SMUSH=api` loads Smush's
   settings API from `tests/stubs/smush.php` too
   (`ViewportHeroWithSmushApiTest`). `ROPT_TESTS_WP=6.6` leaves out what core
@@ -274,10 +273,9 @@ clear never does (a cage can hide them while uapi works, and a silent stop
 would leave every edit stale). A card left with no option is not drawn at
 all, which off Kinsta is the Porto card. The rules live in
 `Settings::fields_for_marks()`, pure so the cases pin them with fields of their
-own. `available_fields()` and `conditions()` take no parameter, as the
-template ships them: a case that needs a fake uapi hands `fields_for_marks()`
-the marks of `conditions()` with `NEEDS_HOST_CACHE` answered by a
-`Page_Cache` built on it.
+own. `available_fields()` and `conditions()` take an optional `Page_Cache`,
+which the template's do not: the cPanel case passes one built on a fake uapi,
+so the answer `conditions()` gives for `NEEDS_HOST_CACHE` is the one tested.
 
 Every switch ships `'default' => 'yes'`, and so does the master switch
 (owner's decision, 2026-10-16: the plugin goes on every client with its
@@ -484,9 +482,12 @@ touching it. Rules that are easy to break:
   every request, loads neither `Admin\Settings_Page` nor `Install`.
   `PageCacheTest` holds each to the constant the shell fires. The save is
   heard whatever the switch says; `DIRTY` only while `page_cache_clear` is on.
-  `mark()` takes two arguments, the reason and a product id that defaults to
-  0, and drops a reason outside `Page_Cache::REASONS` without a word: keep
-  `Install::DIRTY_HOOK`'s docblock listing what it takes. `Shop_Cache` fires
+  `DIRTY` calls `dirty()`, which takes two arguments, the reason and a
+  product id that defaults to 0, and passes them to `mark()` unless the
+  reason is `'saved'`: that one forces a clear, and only `settings_saved()`
+  may record it. `mark()` drops a reason outside `Page_Cache::REASONS`
+  without a word, so what the hook takes is `REASONS` minus `'saved'`, the
+  list `Install::DIRTY_HOOK`'s docblock keeps. `Shop_Cache` fires
   `do_action( Page_Cache::DIRTY, $reason, $id )`, with the shell's
   `DynamicHooknameFound` ignore.
 - Only this plugin's own options count as a change to every page when they are
@@ -526,7 +527,9 @@ over, and both go once no shop runs WP Optimizer:
   hand-over: the copy reads only `rwpo_`.
 
 The two public filters followed the rename, as `ropt_databot_async` and
-`ropt_prefetch_on_hover`: a shop that hooked the `rwpo_` names must follow.
+`ropt_prefetch_on_hover`, and WP Optimizer's two actions became the group's,
+`rhinnoit_settings_saved` and `rhinnoit_page_cache_dirty`: a shop that fired
+or hooked the `rwpo_` names must follow.
 
 ## What not to do
 

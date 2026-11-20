@@ -269,8 +269,8 @@ final class SettingsNeedsTest extends TestCase {
 		chmod( $dir . '/uapi', 0755 );
 		touch( $dir . '/ea-nginx.conf' );
 
-		$ids     = array_column( Settings::fields_for_marks( Settings::fields(), array_merge( Settings::conditions(), array( Settings::NEEDS_HOST_CACHE => ( new Page_Cache( $dir . '/uapi', 20, false, array( $dir . '/ea-nginx.conf' ) ) )->can_clear() ) ) ), 'id' );
-		$without = array_column( Settings::fields_for_marks( Settings::fields(), array_merge( Settings::conditions(), array( Settings::NEEDS_HOST_CACHE => ( new Page_Cache( $dir . '/uapi', 20, false, array( $dir . '/missing.conf' ) ) )->can_clear() ) ) ), 'id' );
+		$ids     = array_column( Settings::available_fields( new Page_Cache( $dir . '/uapi', 20, false, array( $dir . '/ea-nginx.conf' ) ) ), 'id' );
+		$without = array_column( Settings::available_fields( new Page_Cache( $dir . '/uapi', 20, false, array( $dir . '/missing.conf' ) ) ), 'id' );
 
 		unlink( $dir . '/ea-nginx.conf' );
 		unlink( $dir . '/uapi' );

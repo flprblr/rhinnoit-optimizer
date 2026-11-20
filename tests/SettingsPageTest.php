@@ -153,6 +153,7 @@ final class SettingsPageTest extends TestCase {
 		$checkboxes = substr_count( $html, 'type="checkbox"' );
 
 		$this->assertSame( 18, $checkboxes, 'One switch per optimization that can apply, plus the master switch: not the page cache and Kinsta ones on a site without them.' );
+		$this->assertStringNotContainsString( 'type="number"', $html, 'The revision limit belongs to wp-config.php, which always wins.' );
 		$this->assertSame( $checkboxes, substr_count( $html, 'type="checkbox" role="switch" class="ropt-switch"' ) );
 		$this->assertStringContainsString( '<label class="ropt-row__label" for="ropt_enabled">Apply the optimizations</label>', $html );
 		$this->assertStringContainsString( 'aria-describedby="ropt_enabled-desc"', $html );

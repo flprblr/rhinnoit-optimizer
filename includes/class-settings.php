@@ -345,10 +345,11 @@ final class Settings {
 	 * they had, ready for the day what they need is installed. See
 	 * fields_for_marks() for the rules.
 	 *
+	 * @param Page_Cache|null $cache The page cache to ask about the host; tests point it at a fake uapi.
 	 * @return array<int, array<string, mixed>>
 	 */
-	public static function available_fields(): array {
-		return self::fields_for_marks( self::fields(), self::conditions() );
+	public static function available_fields( ?Page_Cache $cache = null ): array {
+		return self::fields_for_marks( self::fields(), self::conditions( $cache ) );
 	}
 
 	/**
@@ -454,15 +455,16 @@ final class Settings {
 	 * that names one: a mark this list does not answer hides its field on
 	 * every site.
 	 *
+	 * @param Page_Cache|null $cache The page cache to ask about the host; tests point it at a fake uapi.
 	 * @return array<string, bool>
 	 */
-	public static function conditions(): array {
+	public static function conditions( ?Page_Cache $cache = null ): array {
 		return array(
 			''                            => true,
 			self::REQUIRES_WOOCOMMERCE    => Plugin::woocommerce_is_supported(),
 			self::REQUIRES_PORTO          => Plugin::woocommerce_is_supported() && 'porto' === get_template(),
 			self::NEEDS_KINSTA            => Plugin::kinsta_is_active(),
-			self::NEEDS_HOST_CACHE        => ( new Page_Cache() )->can_clear(),
+			self::NEEDS_HOST_CACHE        => ( $cache ?? new Page_Cache() )->can_clear(),
 			self::NEEDS_CLASSIC_THEME     => ! wp_is_block_theme(),
 			self::NEEDS_NO_THEME_JSON     => ! wp_theme_has_theme_json(),
 			self::NEEDS_SPECULATION_RULES => function_exists( 'wp_get_speculation_rules_configuration' ),

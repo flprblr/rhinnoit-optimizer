@@ -316,7 +316,7 @@ final class Page_Cache {
 			add_action( 'elementor/core/files/clear_cache', array( $this, 'site_changed' ) );
 		}
 
-		add_action( self::DIRTY, array( $this, 'mark' ), 10, 2 );
+		add_action( self::DIRTY, array( $this, 'dirty' ), 10, 2 );
 		add_action( self::EVENT, array( $this, 'run_scheduled' ) );
 	}
 
@@ -334,6 +334,26 @@ final class Page_Cache {
 		if ( $this->active || Settings::feature( 'page_cache_clear' ) ) {
 			$this->mark( 'saved' );
 		}
+	}
+
+	/**
+	 * Takes a reason another plugin of the group reported through DIRTY.
+	 *
+	 * Every reason mark() takes except 'saved', which forces a clear past the
+	 * spacing and past Kinsta's autopurge switch: only the save of a settings
+	 * screen may record it, through settings_saved(). What passes is the list
+	 * Install::DIRTY_HOOK documents.
+	 *
+	 * @param mixed $reason     content, site, stock, sale or product.
+	 * @param mixed $product_id Product the change is about; 0 for many or none.
+	 * @return void
+	 */
+	public function dirty( mixed $reason, mixed $product_id = 0 ): void {
+		if ( 'saved' === $reason ) {
+			return;
+		}
+
+		$this->mark( $reason, $product_id );
 	}
 
 	/**

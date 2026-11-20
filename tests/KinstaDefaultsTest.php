@@ -6,8 +6,8 @@
  * without a page cache pays a render per hover. Both hosts the shops run on
  * cache pages - Kinsta, and cPanel's NGINX - and Chrome keeps at most two
  * hover prefetches in flight, so it ships on everywhere. The first case runs
- * on Kinsta, in its own process: ROPT_TESTS_KINSTA makes the bootstrap define
- * KINSTAMU_VERSION, and Settings::defaults() caches its answer.
+ * on Kinsta, in its own process: it defines KINSTAMU_VERSION itself, since
+ * Settings::defaults() caches its answer.
  *
  * @package RhinnoIT\Optimizer
  */

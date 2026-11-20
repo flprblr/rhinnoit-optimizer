@@ -267,6 +267,7 @@ final class AdminTest extends TestCase {
 		);
 		$this->assertStringContainsString( 'admin-post.php', $html );
 		$this->assertStringNotContainsString( 'nav-tab', $html, 'One screen does not need a tab bar.' );
+		$this->assertStringNotContainsString( 'Diagnostics', $html, 'The screen is the switches and nothing else.' );
 	}
 
 	public function test_a_save_leaves_every_undrawn_option_alone(): void {

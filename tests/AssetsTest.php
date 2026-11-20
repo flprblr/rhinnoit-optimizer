@@ -116,6 +116,27 @@ final class AssetsTest extends TestCase {
 		$this->assertSame( 'ropt-admin', WP_Stub::$enqueued[0]['handle'] ?? '' );
 	}
 
+	/**
+	 * Nothing loads on another admin screen.
+	 *
+	 * admin_enqueue_scripts fires on every admin screen, so this is the guard
+	 * that keeps the bundle off the rest of wp-admin.
+	 *
+	 * @return void
+	 */
+	public function test_nothing_loads_on_another_admin_screen(): void {
+		$this->manifest( "array( 'dependencies' => array(), 'version' => 'abc' )", 'admin' );
+
+		foreach ( array( 'edit.php', 'wc-settings', '' ) as $page ) {
+			WP_Stub::$enqueued = array();
+			$_GET['page']      = $page;
+
+			( new Assets() )->enqueue_admin();
+
+			$this->assertSame( array(), WP_Stub::$enqueued, sprintf( 'Loaded on "%s".', $page ) );
+		}
+	}
+
 	public function test_valid_manifest_enqueues_with_its_dependencies_and_version(): void {
 		$_GET['page'] = Menu::PAGE_SLUG;
 

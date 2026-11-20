@@ -389,8 +389,11 @@ fires, so what the other plugins print in cached pages stays fresh through it:
   and, for one product, its id. Every plugin of the group fires it with
   `'site'` when an update changes its version - a build copied over the
   folder fires no upgrader hook - and `Shop_Cache` fires it with `'stock'`,
-  `'sale'` or `'product'` and the product id. It takes `content`, `site`,
-  `stock`, `sale` and `product`, and drops any other reason without a word.
+  `'sale'` or `'product'` and the product id (0 for a change to many
+  products), and with `'site'` when WooCommerce's settings or product
+  permalinks are saved. It takes `content`, `site`, `stock`, `sale` and
+  `product`, and drops any other reason without a word, `'saved'` included:
+  only a save of a settings screen forces a clear.
 
 The second hook, like every other change listed in this section, is heard only
 while **Clear the cache after changes** is on. Activating or deactivating any
@@ -695,11 +698,12 @@ inherits whatever the test class put in the environment before it was spawned.
 Anything else gated on a constant needs the same treatment:
 
 - `ROPT_TESTS_KINSTA=1` defines Kinsta's `KINSTAMU_VERSION`, for
-  `BootOnKinstaTest`, `CartFragmentsTest`, `KinstaDefaultsTest`,
-  `PageCacheOnKinstaTest`, `SettingsOnKinstaTest` (the switches only Kinsta is
-  offered), `SettingsWithoutPortoTest` and `ShopCacheOnKinstaTest`.
+  `BootOnKinstaTest`, `CartFragmentsTest`, `PageCacheOnKinstaTest`,
+  `SettingsOnKinstaTest` (the switches only Kinsta is offered),
+  `SettingsWithoutPortoTest` and `ShopCacheOnKinstaTest`.
   `KinstaNamespacedConstantTest` defines the newer `Kinsta\KMP\VERSION` alone in
-  its own process, and `HookArityTest` runs a second time on Kinsta in one.
+  its own process, `KinstaDefaultsTest` defines `KINSTAMU_VERSION` itself in
+  one, and `HookArityTest` runs a second time on Kinsta in one.
   `CartFragmentsOffKinstaTest` runs in the shared process, where neither is
   defined.
 - `ROPT_TESTS_SMUSH=1` defines `WP_SMUSH_VERSION`, for
@@ -861,10 +865,16 @@ shop that runs WP Optimizer, in this order:
    deactivated, and does nothing until then", so no page gets a correction
    twice and no change clears the cache twice.
 2. **Deactivate** WP Optimizer straight away. From the next request the two
-   take over. The request that deactivates it is still WP Optimizer's, and
-   its own clear on deactivation runs - on Kinsta, not forced.
-3. On Kinsta, **save this plugin's screen** once: that forces a purge and runs
-   the 5-minute check, so no page cached before the switch outlives it.
+   take over. The request that deactivates it is still WP Optimizer's, and its
+   own clear on deactivation may not happen: on cPanel, within 30 seconds of
+   its last clear (each install and activation of step 1 is one), it is
+   deferred to its scheduled event, which nothing runs once WP Optimizer is
+   inactive; on Kinsta it is not forced.
+3. **Save this plugin's screen** once, on any host, with **Clear the cache
+   after changes** on: a save clears at once, past the spacing, and on Kinsta
+   forces a purge and runs the 5-minute check, so no page cached before the
+   switch outlives it. With that switch off nothing clears: purge the host's
+   cache by hand.
 4. **Delete** WP Optimizer later, from the admin. Its uninstaller removes its
    own `rwpo_*` options; the copies here carry another prefix, and this
    plugin's uninstaller never touches WP Optimizer's rows.
@@ -875,8 +885,9 @@ defaults. Settings changed in WP Optimizer after step 1 are not carried over:
 the copy runs on activation and on each version change, and never overwrites
 a row that already exists here. Nothing else is copied: not WP Optimizer's
 version, nor its page cache state - when it last cleared, and any backoff
-after a failure, start over here - nor its scheduled clears, which its own
-deactivation drops.
+after a failure, start over here - nor its scheduled clears: its own
+deactivation drops the pending one, and one it defers on that request runs
+under its event name, which nothing hears any more. Step 3 covers both.
 
 What changes around the shop:
 
@@ -886,6 +897,11 @@ What changes around the shop:
   Look for the old names in the shop's must-use plugins and child theme
   before the switch: code that hooks them must follow, or it stops doing
   anything.
+- **WP Optimizer's two actions** are now the group's: `rwpo_settings_saved`
+  is `rhinnoit_settings_saved`, and `rwpo_page_cache_dirty` is
+  `rhinnoit_page_cache_dirty`, which takes `content`, `site`, `stock`, `sale`
+  or `product` (see [The group's hooks](#the-groups-hooks)). Code that fires
+  or hooks the old names must follow too.
 - **Handles and ids** follow the prefix: `ropt-body-reset`, `ropt-fonts-*` and
   `ropt-databot-loader` (see [Assets](#assets)).
 - **Log entries** go under the source `rhinnoit-optimizer` from now on; the

@@ -117,7 +117,7 @@ final class PageCacheTest extends TestCase {
 		$this->service();
 
 		$this->assertSame( 100, WP_Stub::$priorities['shutdown:flush'] );
-		$this->assertContains( Page_Cache::DIRTY . ':mark', WP_Stub::$callbacks );
+		$this->assertContains( Page_Cache::DIRTY . ':dirty', WP_Stub::$callbacks );
 		$this->assertSame( Install::DIRTY_HOOK, Page_Cache::DIRTY, 'Every plugin of the group fires it by the name Install holds.' );
 		$this->assertSame( Settings_Page::SAVED_HOOK, Page_Cache::SAVED, 'Every settings screen of the group fires it by the name Settings_Page holds.' );
 	}
@@ -381,7 +381,7 @@ final class PageCacheTest extends TestCase {
 				'activated_plugin:site_changed',
 				'deactivated_plugin:site_changed',
 				'elementor/core/files/clear_cache:site_changed',
-				'rhinnoit_page_cache_dirty:mark',
+				'rhinnoit_page_cache_dirty:dirty',
 				'ropt_page_cache_run:run_scheduled',
 			),
 			WP_Stub::$callbacks
@@ -583,6 +583,23 @@ final class PageCacheTest extends TestCase {
 		$this->assertSame( array(), WP_Stub::$scheduled );
 	}
 
+	public function test_the_group_hook_cannot_force_a_clear(): void {
+		WP_Stub::$options[ Page_Cache::STATE ] = array( 'last' => time() - 5, 'failed_until' => 0 );
+		$cache                                 = $this->service();
+
+		$cache->dirty( 'saved' );
+		$cache->flush();
+
+		$this->assertSame( array(), $this->calls(), 'Only the save of a settings screen forces a clear, not another plugin of the group.' );
+		$this->assertSame( array(), WP_Stub::$scheduled );
+
+		$cache->dirty( 'site' );
+		$cache->flush();
+
+		$this->assertSame( array(), $this->calls(), 'The five reasons the group fires keep the spacing.' );
+		$this->assertArrayHasKey( Page_Cache::EVENT, WP_Stub::$scheduled, 'And are passed on, not dropped.' );
+	}
+
 	public function test_a_save_clears_when_the_switch_is_on_before_or_after(): void {
 		foreach (
 			array(
@@ -620,6 +637,6 @@ final class PageCacheTest extends TestCase {
 	public function test_the_shop_half_can_name_the_product(): void {
 		$this->service();
 
-		$this->assertContains( array( 'rhinnoit_page_cache_dirty', Page_Cache::class, 'mark', 2 ), WP_Stub::$registered, 'With one argument every product arrives as 0, and 0 purges everything.' );
+		$this->assertContains( array( 'rhinnoit_page_cache_dirty', Page_Cache::class, 'dirty', 2 ), WP_Stub::$registered, 'With one argument every product arrives as 0, and 0 purges everything.' );
 	}
 }
