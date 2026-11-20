@@ -28,6 +28,12 @@ $ropt_options = array(
 	'ropt_pingbacks',
 	'ropt_page_cache_clear',
 	'ropt_same_url_redirect',
+	'ropt_product_image_eager',
+	'ropt_gallery_strip_lazy',
+	'ropt_loop_first_row',
+	'ropt_page_cache_shop',
+	'ropt_kinsta_stock_status_only',
+	'ropt_cart_fragments',
 	// When the last cPanel clear ran; not a setting.
 	'ropt_page_cache_state',
 	// A switch retired by a split, or removed outright, stays listed here: the

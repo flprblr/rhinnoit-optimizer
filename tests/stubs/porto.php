@@ -8,6 +8,13 @@
  */
 
 /**
+ * Porto's category image, printed above a category's products when its term meta holds one.
+ *
+ * @return void
+ */
+function porto_woocommerce_category_image() {}
+
+/**
  * Porto's mini cart: the spinner it prints where the cart goes, through its filter.
  *
  * @return string

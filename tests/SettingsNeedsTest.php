@@ -161,7 +161,7 @@ final class SettingsNeedsTest extends TestCase {
 	}
 
 	/**
-	 * Without a page cache it can clear, its switch is not offered; the rest is.
+	 * Without Kinsta or a page cache it can clear, their switches are not offered; the rest is.
 	 *
 	 * @return void
 	 */
@@ -171,11 +171,13 @@ final class SettingsNeedsTest extends TestCase {
 
 		$ids = self::drawn();
 
-		foreach ( array( 'ropt_page_cache_clear' ) as $id ) {
+		foreach ( array( 'ropt_kinsta_stock_status_only', 'ropt_cart_fragments', 'ropt_page_cache_clear', 'ropt_page_cache_shop' ) as $id ) {
 			$this->assertNotContains( $id, $ids, sprintf( '%s does nothing on this site.', $id ) );
 		}
 
-		foreach ( array( 'ropt_global_styles', 'ropt_classic_theme_styles', 'ropt_speculative_moderate', 'ropt_same_url_redirect' ) as $id ) {
+		$this->assertNotContains( 'ropt_porto', $ids, 'Its one switch needs Kinsta, so on this Porto shop the card has nothing to offer.' );
+
+		foreach ( array( 'ropt_global_styles', 'ropt_classic_theme_styles', 'ropt_speculative_moderate', 'ropt_same_url_redirect', 'ropt_product_image_eager' ) as $id ) {
 			$this->assertContains( $id, $ids, sprintf( '%s can act here.', $id ) );
 		}
 	}
@@ -256,7 +258,7 @@ final class SettingsNeedsTest extends TestCase {
 	}
 
 	/**
-	 * A cPanel shop is offered the page cache switch.
+	 * A cPanel shop is offered both page cache switches, and no Kinsta one.
 	 *
 	 * @return void
 	 */
@@ -275,7 +277,11 @@ final class SettingsNeedsTest extends TestCase {
 		rmdir( $dir );
 
 		$this->assertContains( 'ropt_page_cache_clear', $ids );
+		$this->assertContains( 'ropt_page_cache_shop', $ids, 'Shop_Cache clears through cPanel too, not only Kinsta.' );
+		$this->assertNotContains( 'ropt_kinsta_stock_status_only', $ids );
+		$this->assertNotContains( 'ropt_cart_fragments', $ids );
 		$this->assertNotContains( 'ropt_page_cache_clear', $without, 'A cPanel server without ea-nginx has no NGINX cache to clear.' );
+		$this->assertNotContains( 'ropt_page_cache_shop', $without );
 	}
 
 	/**

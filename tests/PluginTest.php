@@ -45,22 +45,28 @@ final class PluginTest extends TestCase {
 	public function test_defaults_come_from_the_field_definition(): void {
 		$this->assertSame(
 			array(
-				'ropt_enabled'              => 'yes',
-				'ropt_srcset_prune'         => 'yes',
-				'ropt_lazy_first_only'      => 'yes',
-				'ropt_viewport_hero'        => 'yes',
-				'ropt_font_inline'          => 'yes',
-				'ropt_css_versioning'       => 'yes',
-				'ropt_global_styles'        => 'yes',
-				'ropt_classic_theme_styles' => 'yes',
-				'ropt_speculative_moderate' => 'yes',
-				'ropt_head_rsd'             => 'yes',
-				'ropt_head_shortlink'       => 'yes',
-				'ropt_head_oembed'          => 'yes',
-				'ropt_head_generator'       => 'yes',
-				'ropt_pingbacks'            => 'yes',
-				'ropt_page_cache_clear'     => 'yes',
-				'ropt_same_url_redirect'    => 'yes',
+				'ropt_enabled'                  => 'yes',
+				'ropt_srcset_prune'             => 'yes',
+				'ropt_lazy_first_only'          => 'yes',
+				'ropt_viewport_hero'            => 'yes',
+				'ropt_font_inline'              => 'yes',
+				'ropt_css_versioning'           => 'yes',
+				'ropt_global_styles'            => 'yes',
+				'ropt_classic_theme_styles'     => 'yes',
+				'ropt_speculative_moderate'     => 'yes',
+				'ropt_head_rsd'                 => 'yes',
+				'ropt_head_shortlink'           => 'yes',
+				'ropt_head_oembed'              => 'yes',
+				'ropt_head_generator'           => 'yes',
+				'ropt_pingbacks'                => 'yes',
+				'ropt_page_cache_clear'         => 'yes',
+				'ropt_same_url_redirect'        => 'yes',
+				'ropt_product_image_eager'      => 'yes',
+				'ropt_gallery_strip_lazy'       => 'yes',
+				'ropt_loop_first_row'           => 'yes',
+				'ropt_page_cache_shop'          => 'yes',
+				'ropt_kinsta_stock_status_only' => 'yes',
+				'ropt_cart_fragments'           => 'yes',
 			),
 			Settings::defaults()
 		);
@@ -96,6 +102,7 @@ final class PluginTest extends TestCase {
 		// that adds a conditional card adds its title id and mark here.
 		$marks   = array(
 			'ropt_woocommerce' => Settings::REQUIRES_WOOCOMMERCE,
+			'ropt_porto'       => Settings::REQUIRES_PORTO,
 		);
 		$current = '';
 		$seen    = array();

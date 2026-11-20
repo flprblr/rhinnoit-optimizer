@@ -19,7 +19,7 @@
 		}
 	},
 	"scripts": {
-		"analyse": "phpstan analyse --memory-limit=1G",
+		"analyse": "phpstan analyse --memory-limit=2G",
 		"dist": "bin/build-zip.sh",
 		"lint": "phpcs",
 		"lint:fix": "phpcbf",

@@ -10,6 +10,12 @@ namespace RhinnoIT\Optimizer;
 use Automattic\WooCommerce\Utilities\FeaturesUtil;
 use RhinnoIT\Optimizer\Admin\Menu;
 use RhinnoIT\Optimizer\Admin\Plugin_Links;
+use RhinnoIT\Optimizer\Frontend\Cart_Fragments;
+use RhinnoIT\Optimizer\Frontend\First_Row;
+use RhinnoIT\Optimizer\Frontend\Gallery_Strip;
+use RhinnoIT\Optimizer\Frontend\Product_Image;
+use RhinnoIT\Optimizer\Frontend\Shop_Cache;
+use RhinnoIT\Optimizer\Frontend\Shop_Prefetch;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -82,11 +88,16 @@ final class Plugin {
 		( new Canonical_Redirect() )->register();
 		( new Assets() )->register();
 
-		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf -- The WooCommerce half of the shell, empty until a plugin has one.
 		if ( self::woocommerce_is_supported() ) {
 			// A service whose job needs WooCommerce registers here and nowhere
 			// else, and lives in includes/frontend/. The WordPress half above
 			// touches WooCommerce only behind a guard.
+			( new Product_Image() )->register();
+			( new First_Row() )->register();
+			( new Gallery_Strip() )->register();
+			( new Cart_Fragments() )->register();
+			( new Shop_Prefetch() )->register();
+			( new Shop_Cache() )->register();
 		} elseif ( self::woocommerce_is_active() ) {
 			add_action( 'admin_notices', array( $this, 'render_unsupported_notice' ) );
 		}

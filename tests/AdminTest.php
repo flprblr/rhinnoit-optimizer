@@ -272,7 +272,9 @@ final class AdminTest extends TestCase {
 	public function test_a_save_leaves_every_undrawn_option_alone(): void {
 		// A field the form did not draw is absent from the post, exactly like
 		// an unchecked box. Only the drawn list tells them apart.
-		WP_Stub::$options['ropt_css_versioning'] = 'yes';
+		WP_Stub::$options['ropt_product_image_eager'] = 'yes';
+		WP_Stub::$options['ropt_css_versioning']      = 'yes';
+		WP_Stub::$options['ropt_cart_fragments']      = 'yes';
 
 		$_POST = array(
 			'ropt_srcset_prune' => 'yes',
@@ -281,7 +283,9 @@ final class AdminTest extends TestCase {
 
 		$this->save();
 
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_product_image_eager'] );
 		$this->assertSame( 'yes', WP_Stub::$options['ropt_css_versioning'] );
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_cart_fragments'] );
 	}
 
 	public function test_saving_requires_the_capability(): void {

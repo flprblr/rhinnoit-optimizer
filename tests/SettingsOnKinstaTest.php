@@ -40,7 +40,7 @@ final class SettingsOnKinstaTest extends TestCase {
 	}
 
 	/**
-	 * The page cache switch is offered on Kinsta.
+	 * The page cache and Kinsta switches are offered on Kinsta.
 	 *
 	 * @return void
 	 */
@@ -51,7 +51,7 @@ final class SettingsOnKinstaTest extends TestCase {
 
 		$ids = array_column( Settings::available_fields(), 'id' );
 
-		foreach ( array( 'ropt_page_cache_clear' ) as $id ) {
+		foreach ( array( 'ropt_page_cache_clear', 'ropt_page_cache_shop', 'ropt_kinsta_stock_status_only', 'ropt_cart_fragments' ) as $id ) {
 			$this->assertContains( $id, $ids );
 		}
 	}

@@ -35,6 +35,7 @@ final class KinstaDefaultsTest extends TestCase {
 		Install::activate();
 
 		$this->assertSame( 'yes', WP_Stub::$options['ropt_speculative_moderate'] );
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_cart_fragments'] );
 	}
 
 	public function test_hover_prefetching_ships_on_away_from_kinsta_too(): void {

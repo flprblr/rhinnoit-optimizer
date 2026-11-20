@@ -122,14 +122,19 @@ final class SettingsPageTest extends TestCase {
 	/**
 	 * The form shows one card per thing the shop runs, in order.
 	 *
+	 * The shared process runs Porto, off Kinsta.
+	 *
 	 * @return void
 	 */
 	public function test_a_shop_sees_a_card_per_domain(): void {
 		$html = $this->form();
 
 		$this->assertStringContainsString( '<h2 class="ropt-card__title">WordPress</h2>', $html );
-		$this->assertSame( 2, substr_count( $html, '<section class="ropt-card">' ), 'The master switch, then one card per domain with a switch to offer.' );
-		$this->assertSame( 1, substr_count( $html, '<h2' ), 'The master switch has no heading of its own.' );
+		$this->assertStringContainsString( '<h2 class="ropt-card__title">WooCommerce</h2>', $html );
+		$this->assertStringNotContainsString( '>Porto</h2>', $html, 'Its one switch needs Kinsta, so here the card has nothing to offer.' );
+		$this->assertLessThan( strpos( $html, '>WooCommerce</h2>' ), strpos( $html, '>WordPress</h2>' ), 'The platform before the addition.' );
+		$this->assertSame( 3, substr_count( $html, '<section class="ropt-card">' ), 'The master switch, then one card per domain with a switch to offer.' );
+		$this->assertSame( 2, substr_count( $html, '<h2' ), 'The master switch has no heading of its own.' );
 		$this->assertSame( substr_count( $html, '<section' ), substr_count( $html, '</section>' ), 'Every card closes what it opened.' );
 		$this->assertSame( substr_count( $html, '<div' ), substr_count( $html, '</div>' ), 'Every row closes what it opened.' );
 	}
@@ -147,7 +152,7 @@ final class SettingsPageTest extends TestCase {
 		$html       = $this->form();
 		$checkboxes = substr_count( $html, 'type="checkbox"' );
 
-		$this->assertSame( 15, $checkboxes, 'One switch per optimization that can apply, plus the master switch: not the page cache one on a site without a cache to clear.' );
+		$this->assertSame( 18, $checkboxes, 'One switch per optimization that can apply, plus the master switch: not the page cache and Kinsta ones on a site without them.' );
 		$this->assertSame( $checkboxes, substr_count( $html, 'type="checkbox" role="switch" class="ropt-switch"' ) );
 		$this->assertStringContainsString( '<label class="ropt-row__label" for="ropt_enabled">Apply the optimizations</label>', $html );
 		$this->assertStringContainsString( 'aria-describedby="ropt_enabled-desc"', $html );
@@ -165,7 +170,7 @@ final class SettingsPageTest extends TestCase {
 		$this->assertSame( 1, substr_count( $html, '<h3 class="ropt-card__group">Page head</h3>' ) );
 		$this->assertLessThan( strpos( $html, 'for="ropt_head_rsd"' ), strpos( $html, '>Page head</h3>' ) );
 		$this->assertGreaterThan( strpos( $html, 'for="ropt_classic_theme_styles"' ), strpos( $html, '>Page head</h3>' ) );
-		$this->assertSame( 6, substr_count( $html, '<h3 class="ropt-card__group">' ), 'The six groups of the WordPress card.' );
+		$this->assertSame( 8, substr_count( $html, '<h3 class="ropt-card__group">' ), 'Six WordPress groups and two WooCommerce ones: a group with every switch hidden has no label.' );
 	}
 
 	/**
@@ -265,6 +270,52 @@ final class SettingsPageTest extends TestCase {
 	}
 
 	/**
+	 * A box that was not on the screen is not stored as unchecked.
+	 *
+	 * The field list is rebuilt at save time. If WooCommerce became available
+	 * while the form was open, its section was never drawn, and storing its
+	 * absent boxes as "no" would switch off the product image correction that
+	 * nobody touched.
+	 *
+	 * @return void
+	 */
+	public function test_a_box_that_was_not_drawn_is_left_alone(): void {
+		$fields = Settings_Page::fields_to_save(
+			Settings::fields(),
+			array( 'ropt_drawn' => array( 'ropt_srcset_prune' ) )
+		);
+
+		$this->assertSame( array( 'ropt_srcset_prune' ), array_column( $fields, 'id' ) );
+		$this->assertArrayNotHasKey(
+			'ropt_product_image_eager',
+			Settings_Page::sanitize_submission( $fields, array() ),
+			'Undrawn, so its stored value survives.'
+		);
+	}
+
+	/**
+	 * The drawn list can narrow the save but never widen it.
+	 *
+	 * @return void
+	 */
+	public function test_the_drawn_list_cannot_name_a_field_this_site_lacks(): void {
+		$wordpress_only = array_values(
+			array_filter(
+				Settings::fields(),
+				static fn ( array $field ): bool => 'woocommerce' !== ( $field['requires'] ?? '' )
+			)
+		);
+
+		$fields = Settings_Page::fields_to_save(
+			$wordpress_only,
+			array( 'ropt_drawn' => array( 'ropt_product_image_eager', 'siteurl', array( 'x' ) ) )
+		);
+
+		$this->assertSame( array(), $fields, 'A crafted marker is intersected with what the site can use.' );
+		$this->assertSame( array(), Settings_Page::fields_to_save( $wordpress_only, array( 'ropt_drawn' => 'not a list' ) ) );
+	}
+
+	/**
 	 * Every option the form draws carries its marker, once.
 	 *
 	 * @return void
@@ -272,7 +323,7 @@ final class SettingsPageTest extends TestCase {
 	public function test_every_drawn_option_carries_its_marker(): void {
 		$html = $this->form();
 
-		foreach ( array( 'ropt_enabled', 'ropt_srcset_prune', 'ropt_speculative_moderate' ) as $id ) {
+		foreach ( array( 'ropt_enabled', 'ropt_srcset_prune', 'ropt_speculative_moderate', 'ropt_product_image_eager' ) as $id ) {
 			$this->assertSame( 1, substr_count( $html, sprintf( 'name="ropt_drawn[]" value="%s"', $id ) ), sprintf( '%s is drawn once, so it is marked once.', $id ) );
 		}
 

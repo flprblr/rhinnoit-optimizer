@@ -46,6 +46,8 @@ final class BootWithoutWooCommerceTest extends TestCase {
 		$this->assertContains( 'style_loader_src', WP_Stub::$hooks );
 		$this->assertContains( 'the_content:preload_heroes', WP_Stub::$callbacks, 'The banner preloads read only the page, never WooCommerce.' );
 		$this->assertContains( 'admin_menu', WP_Stub::$hooks, 'The page exists, or nobody could configure it.' );
+
+		$this->assertNotContains( 'wp_get_attachment_image_attributes', WP_Stub::$hooks, 'The product image correction asks is_product(), which does not exist here.' );
 		$this->assertNotContains( 'admin_notices', WP_Stub::$hooks, 'No WooCommerce is a valid site, not an error to announce.' );
 	}
 
@@ -63,10 +65,45 @@ final class BootWithoutWooCommerceTest extends TestCase {
 
 	#[RunInSeparateProcess]
 	public function test_the_woocommerce_section_is_not_on_the_screen(): void {
+		// On Kinsta, where Porto's one switch could act: off it that card would
+		// have nothing to offer, and its line below would hold for that alone.
+		define( 'KINSTAMU_VERSION', '3.7.0' );
+
 		$ids = array_column( Settings::available_fields(), 'id' );
 
 		$this->assertContains( 'ropt_srcset_prune', $ids );
+		$this->assertNotContains( 'ropt_product_image_eager', $ids );
 		$this->assertNotContains( 'ropt_woocommerce', $ids, 'The section heading goes with its fields.' );
+		$this->assertNotContains( 'ropt_porto', $ids, 'Porto\'s section corrects WooCommerce markup.' );
+	}
+
+	#[RunInSeparateProcess]
+	public function test_a_crafted_post_cannot_write_the_woocommerce_options(): void {
+		WP_Stub::reset();
+		WP_Stub::$options['ropt_product_image_eager'] = 'yes';
+		WP_Stub::$options['ropt_loop_first_row']      = 'no';
+
+		// Somebody holding manage_options posts the WooCommerce fields, markers
+		// and all, on a site whose screen never showed them.
+		$_POST = array(
+			'ropt_loop_first_row'     => 'yes',
+			'ropt_gallery_strip_lazy' => 'yes',
+			'ropt_srcset_prune'       => 'yes',
+			'ropt_drawn'              => array( 'ropt_loop_first_row', 'ropt_gallery_strip_lazy', 'ropt_product_image_eager', 'ropt_srcset_prune' ),
+		);
+
+		try {
+			( new Settings_Page() )->save();
+		} catch ( WP_Halt $e ) {
+			unset( $e );
+		}
+
+		$_POST = array();
+
+		$this->assertSame( 'no', WP_Stub::$options['ropt_loop_first_row'], 'A hidden field cannot be written.' );
+		$this->assertArrayNotHasKey( 'ropt_gallery_strip_lazy', WP_Stub::$options );
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_product_image_eager'], 'A value waiting for WooCommerce is kept.' );
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_srcset_prune'], 'The WordPress half saves normally.' );
 	}
 
 	#[RunInSeparateProcess]
@@ -79,6 +116,7 @@ final class BootWithoutWooCommerceTest extends TestCase {
 
 		$this->assertStringContainsString( '>WordPress</h2>', $html );
 		$this->assertStringNotContainsString( '>WooCommerce</h2>', $html );
+		$this->assertStringNotContainsString( 'name="ropt_product_image_eager"', $html );
 		$this->assertSame( 2, substr_count( $html, '<section class="ropt-card">' ), 'The master switch and the WordPress card.' );
 	}
 }

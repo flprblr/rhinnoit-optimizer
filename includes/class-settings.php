@@ -25,6 +25,16 @@ final class Settings {
 	const string REQUIRES_WOOCOMMERCE = 'woocommerce';
 
 	/**
+	 * Marks the rows of the Porto section: WooCommerce corrections to Porto's own markup.
+	 */
+	const string REQUIRES_PORTO = 'porto';
+
+	/**
+	 * A switch that needs Kinsta: it acts on Kinsta's cache and nowhere else.
+	 */
+	const string NEEDS_KINSTA = 'kinsta';
+
+	/**
 	 * A switch that needs a page cache the plugin can clear: Kinsta, or cPanel's uapi with ea-nginx.
 	 *
 	 * The one mark that is not the correction's own stop: Page_Cache clears
@@ -60,11 +70,14 @@ final class Settings {
 	/**
 	 * Field definition.
 	 *
-	 * Three sections: the master switch alone in an untitled card, then
-	 * WordPress, then WooCommerce - the platform before the addition. Every row
+	 * Four sections: the master switch alone in an untitled card, then
+	 * WordPress, then WooCommerce - the platform before the addition - then
+	 * Porto, for corrections to the theme's own WooCommerce markup. Every row
 	 * of the WooCommerce section, its title and sectionend included, carries
-	 * 'requires' => self::REQUIRES_WOOCOMMERCE, and available_fields() drops
-	 * them on a site without a supported WooCommerce.
+	 * 'requires' => self::REQUIRES_WOOCOMMERCE, and every row of the Porto
+	 * section 'requires' => self::REQUIRES_PORTO; available_fields() drops
+	 * both on a site without a supported WooCommerce, and Porto's on a site
+	 * without Porto too.
 	 *
 	 * An option that can only act with something its section does not promise
 	 * - a plugin, the host, the kind of theme, a core version - also carries
@@ -244,10 +257,81 @@ final class Settings {
 				'requires'  => self::REQUIRES_WOOCOMMERCE,
 			),
 			array(
+				'id'       => self::OPTION_PREFIX . 'product_image_eager',
+				'type'     => 'checkbox',
+				'group'    => __( 'Product page', 'rhinnoit-optimizer' ),
+				'title'    => __( 'Load the product image first', 'rhinnoit-optimizer' ),
+				'desc'     => __( 'The main image of a product page loads right away and with priority.', 'rhinnoit-optimizer' ),
+				'default'  => 'yes',
+				'requires' => self::REQUIRES_WOOCOMMERCE,
+			),
+			array(
+				'id'       => self::OPTION_PREFIX . 'gallery_strip_lazy',
+				'type'     => 'checkbox',
+				'group'    => __( 'Product page', 'rhinnoit-optimizer' ),
+				'title'    => __( 'Load the gallery thumbnails later', 'rhinnoit-optimizer' ),
+				'desc'     => __( 'That way they do not compete with the product\'s main image.', 'rhinnoit-optimizer' ),
+				'default'  => 'yes',
+				'requires' => self::REQUIRES_WOOCOMMERCE,
+			),
+			array(
+				'id'       => self::OPTION_PREFIX . 'loop_first_row',
+				'type'     => 'checkbox',
+				'group'    => __( 'Shop pages', 'rhinnoit-optimizer' ),
+				'title'    => __( 'Prioritize the first product row', 'rhinnoit-optimizer' ),
+				'desc'     => __( 'On shop, category and product search pages, the first row\'s images load right away.', 'rhinnoit-optimizer' ),
+				'default'  => 'yes',
+				'requires' => self::REQUIRES_WOOCOMMERCE,
+			),
+			array(
+				'id'       => self::OPTION_PREFIX . 'page_cache_shop',
+				'type'     => 'checkbox',
+				'group'    => __( 'Page cache', 'rhinnoit-optimizer' ),
+				'title'    => __( 'Clear the cache when products change', 'rhinnoit-optimizer' ),
+				'desc'     => __( 'Visitors soon see new prices, scheduled sales and products that sell out or come back in stock. Requires "Clear the cache after changes".', 'rhinnoit-optimizer' ),
+				'default'  => 'yes',
+				'requires' => self::REQUIRES_WOOCOMMERCE,
+				'needs'    => array( self::NEEDS_HOST_CACHE ),
+			),
+			array(
+				'id'       => self::OPTION_PREFIX . 'kinsta_stock_status_only',
+				'type'     => 'checkbox',
+				'group'    => __( 'Page cache', 'rhinnoit-optimizer' ),
+				'title'    => __( 'Cut cache clears on stock changes', 'rhinnoit-optimizer' ),
+				'desc'     => __( 'Clears the cache only when a product sells out or comes back; unit counts shown may lag. Requires "Clear the cache when products change".', 'rhinnoit-optimizer' ),
+				'default'  => 'yes',
+				'requires' => self::REQUIRES_WOOCOMMERCE,
+				'needs'    => array( self::NEEDS_KINSTA ),
+			),
+			array(
 				'id'        => self::OPTION_PREFIX . 'woocommerce',
 				'type'      => 'sectionend',
 				'is_option' => false,
 				'requires'  => self::REQUIRES_WOOCOMMERCE,
+			),
+
+			array(
+				'id'        => self::OPTION_PREFIX . 'porto',
+				'type'      => 'title',
+				'title'     => __( 'Porto', 'rhinnoit-optimizer' ),
+				'is_option' => false,
+				'requires'  => self::REQUIRES_PORTO,
+			),
+			array(
+				'id'       => self::OPTION_PREFIX . 'cart_fragments',
+				'type'     => 'checkbox',
+				'group'    => __( 'Cart and checkout', 'rhinnoit-optimizer' ),
+				'title'    => __( 'Avoid refreshing an empty mini cart', 'rhinnoit-optimizer' ),
+				'desc'     => __( 'Saves the server one request per visit while the cart is empty.', 'rhinnoit-optimizer' ),
+				'default'  => 'yes',
+				'requires' => self::REQUIRES_PORTO,
+				'needs'    => array( self::NEEDS_KINSTA ),
+			),
+			array(
+				'id'        => self::OPTION_PREFIX . 'porto',
+				'type'      => 'sectionend',
+				'is_option' => false,
+				'requires'  => self::REQUIRES_PORTO,
 			),
 		);
 	}
@@ -362,7 +446,8 @@ final class Settings {
 	 * plugin loaded, and from what is installed: a plugin's constant, the host,
 	 * the theme's kind, a core function. Each answer is the one the feature
 	 * itself stops at, so a field is hidden exactly where it would do nothing.
-	 * The empty mark is the one a field without 'requires' carries.
+	 * The empty mark is the one a field without 'requires' carries. Porto's
+	 * section holds WooCommerce corrections, so it needs WooCommerce too.
 	 *
 	 * The template ships no 'needs' mark. A plugin declares its own as NEEDS_*
 	 * constants and answers them here, in the same change as the first field
@@ -375,6 +460,8 @@ final class Settings {
 		return array(
 			''                            => true,
 			self::REQUIRES_WOOCOMMERCE    => Plugin::woocommerce_is_supported(),
+			self::REQUIRES_PORTO          => Plugin::woocommerce_is_supported() && 'porto' === get_template(),
+			self::NEEDS_KINSTA            => Plugin::kinsta_is_active(),
 			self::NEEDS_HOST_CACHE        => ( new Page_Cache() )->can_clear(),
 			self::NEEDS_CLASSIC_THEME     => ! wp_is_block_theme(),
 			self::NEEDS_NO_THEME_JSON     => ! wp_theme_has_theme_json(),

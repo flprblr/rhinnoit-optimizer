@@ -204,3 +204,67 @@ msgstr ""
 #: includes/class-settings.php
 msgid "WooCommerce"
 msgstr ""
+
+#: includes/class-settings.php
+msgid "Product page"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Load the product image first"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "The main image of a product page loads right away and with priority."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Load the gallery thumbnails later"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "That way they do not compete with the product's main image."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Shop pages"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Prioritize the first product row"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "On shop, category and product search pages, the first row's images load right away."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Clear the cache when products change"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Visitors soon see new prices, scheduled sales and products that sell out or come back in stock. Requires \"Clear the cache after changes\"."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Cut cache clears on stock changes"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Clears the cache only when a product sells out or comes back; unit counts shown may lag. Requires \"Clear the cache when products change\"."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Porto"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Cart and checkout"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Avoid refreshing an empty mini cart"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Saves the server one request per visit while the cart is empty."
+msgstr ""

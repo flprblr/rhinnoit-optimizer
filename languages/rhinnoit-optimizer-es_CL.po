@@ -209,3 +209,67 @@ msgstr "Impide que la caché envíe a cada visitante al enlace de un anuncio."
 #: includes/class-settings.php
 msgid "WooCommerce"
 msgstr "WooCommerce"
+
+#: includes/class-settings.php
+msgid "Product page"
+msgstr "Página de producto"
+
+#: includes/class-settings.php
+msgid "Load the product image first"
+msgstr "Cargar primero la imagen del producto"
+
+#: includes/class-settings.php
+msgid "The main image of a product page loads right away and with priority."
+msgstr "La imagen principal de la página de producto carga de inmediato y con prioridad."
+
+#: includes/class-settings.php
+msgid "Load the gallery thumbnails later"
+msgstr "Cargar después las miniaturas de la galería"
+
+#: includes/class-settings.php
+msgid "That way they do not compete with the product's main image."
+msgstr "Así no compiten con la imagen principal del producto."
+
+#: includes/class-settings.php
+msgid "Shop pages"
+msgstr "Tienda y categorías"
+
+#: includes/class-settings.php
+msgid "Prioritize the first product row"
+msgstr "Priorizar la primera fila de productos"
+
+#: includes/class-settings.php
+msgid "On shop, category and product search pages, the first row's images load right away."
+msgstr "En la tienda, las categorías y la búsqueda de productos, las imágenes de la primera fila cargan de inmediato."
+
+#: includes/class-settings.php
+msgid "Clear the cache when products change"
+msgstr "Borrar la caché cuando cambian los productos"
+
+#: includes/class-settings.php
+msgid "Visitors soon see new prices, scheduled sales and products that sell out or come back in stock. Requires \"Clear the cache after changes\"."
+msgstr "Los visitantes ven pronto precios nuevos, ofertas programadas y productos que se agotan o se reponen. Requiere «Borrar la caché al hacer cambios»."
+
+#: includes/class-settings.php
+msgid "Cut cache clears on stock changes"
+msgstr "Borrar menos la caché por stock"
+
+#: includes/class-settings.php
+msgid "Clears the cache only when a product sells out or comes back; unit counts shown may lag. Requires \"Clear the cache when products change\"."
+msgstr "Borra la caché solo cuando un producto se agota o se repone; las unidades mostradas pueden atrasarse. Requiere «Borrar la caché cuando cambian los productos»."
+
+#: includes/class-settings.php
+msgid "Porto"
+msgstr "Porto"
+
+#: includes/class-settings.php
+msgid "Cart and checkout"
+msgstr "Carrito y pago"
+
+#: includes/class-settings.php
+msgid "Avoid refreshing an empty mini cart"
+msgstr "Evitar actualizar el minicarrito vacío"
+
+#: includes/class-settings.php
+msgid "Saves the server one request per visit while the cart is empty."
+msgstr "Ahorra al servidor una petición por visita mientras el carrito está vacío."

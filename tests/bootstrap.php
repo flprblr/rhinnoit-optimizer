@@ -45,6 +45,7 @@ if ( 'none' !== getenv( 'ROPT_TESTS_WC' ) ) {
 }
 define( 'HOUR_IN_SECONDS', 3600 );
 define( 'DAY_IN_SECONDS', 86400 );
+define( 'YEAR_IN_SECONDS', 31536000 );
 
 // Kinsta's MU plugin, for the cases that run on Kinsta: ROPT_TESTS_KINSTA=1.
 if ( '1' === getenv( 'ROPT_TESTS_KINSTA' ) ) {
@@ -125,14 +126,27 @@ final class WP_Stub {
 	/** @var array<string, mixed> Hook => value apply_filters() returns instead of the one passed. */
 	public static array $filters = array();
 	public static mixed $featured_id = 0;
+	/** @var array<int, mixed> Post id => featured image id, for get_post_thumbnail_id( $post ). */
+	public static array $thumbnails = array();
 	/** What get_queried_object_id() answers. */
 	public static int $queried_id = 0;
 	/** What get_the_ID() answers: the post of the loop being rendered, or false. */
 	public static mixed $the_id = false;
 	public static bool $in_the_loop = false;
 	public static bool $main_query = true;
+	public static bool $is_search = false;
+	/** @var array<string, mixed> Query vars get_query_var() answers. */
+	public static array $query_vars = array();
+	/** Columns of the product loop, as wc_get_loop_prop( 'columns' ) answers; null when no loop is set up. */
+	public static mixed $loop_columns = 4;
+	/** What woocommerce_get_loop_display_mode() answers: products, subcategories or both. */
+	public static string $loop_display = 'products';
+	/** What get_queried_object() answers. */
+	public static mixed $queried_object = null;
 	/** @var array<int, string> "hook:callback" pairs has_action() says yes to. */
 	public static array $present_actions = array();
+	/** @var array<string, array<int, array<string, mixed>>> Meta type => object id => key => value, for get_metadata(). */
+	public static array $metadata = array();
 	public static bool $block_theme = false;
 	/** Whether the active theme ships a theme.json, for wp_theme_has_theme_json(). */
 	public static bool $theme_json = false;
@@ -155,6 +169,23 @@ final class WP_Stub {
 	public static array $remote_responses = array();
 	/** @var array<int, string> URLs wp_remote_get() was asked for. */
 	public static array $remote_requests = array();
+	/** @var array<int, string> Handles passed to wp_dequeue_script(). */
+	public static array $dequeued = array();
+	/** @var array<string, int> WooCommerce page => page id, as wc_get_page_id() answers. */
+	public static array $wc_pages = array();
+	/** @var array<int, string> Page id => URI, as get_page_uri() answers. */
+	public static array $page_uris = array();
+	/** @var array<int, string> Post id => status, for get_post_status(); unlisted ids are published. */
+	public static array $post_status = array();
+	/** @var array<int, int> Post id => parent id, as wp_get_post_parent_id() answers. */
+	public static array $parents = array();
+	/** @var array<int, array<string, mixed>> Post id => meta key => value, for get_post_meta(). */
+	public static array $post_meta = array();
+	public static mixed $wc = null;
+	/** @var array<int, array{0: string, 1: string, 2: int}> Name, value and expiry of each wc_setcookie() call. */
+	public static array $cookies = array();
+	/** What woocommerce_mini_cart() prints for an empty cart. */
+	public static string $mini_cart = '<ul class="cart_list"><li class="empty">No products in the cart.</li></ul>';
 	/** @var array<int, array<string, mixed>> */
 	public static array $menu = array();
 	/**
@@ -217,11 +248,19 @@ final class WP_Stub {
 		self::$inline_styles      = array();
 		self::$filters            = array();
 		self::$featured_id        = 0;
+		self::$thumbnails         = array();
 		self::$queried_id         = 0;
 		self::$the_id             = false;
 		self::$in_the_loop        = false;
 		self::$main_query         = true;
+		self::$is_search          = false;
+		self::$query_vars         = array();
+		self::$loop_columns       = 4;
+		self::$loop_display       = 'products';
+		self::$queried_object     = null;
 		self::$present_actions    = array();
+		self::$metadata           = array();
+		unset( $GLOBALS['porto_woocommerce_loop'], $GLOBALS['porto_settings'] );
 		self::$block_theme        = false;
 		self::$theme_json         = false;
 		self::$doing_it_wrong     = array();
@@ -236,6 +275,15 @@ final class WP_Stub {
 		self::$home_url            = 'https://shop.test/';
 		self::$remote_responses    = array();
 		self::$remote_requests     = array();
+		self::$dequeued            = array();
+		self::$wc_pages            = array();
+		self::$page_uris           = array();
+		self::$post_status         = array();
+		self::$parents             = array();
+		self::$post_meta           = array();
+		self::$wc                  = null;
+		self::$cookies             = array();
+		self::$mini_cart           = '<ul class="cart_list"><li class="empty">No products in the cart.</li></ul>';
 
 		self::$caps_checked = array();
 		self::$json_fails = false;
@@ -245,6 +293,7 @@ final class WP_Stub {
 		self::$nonce_action = '';
 		$_GET             = array();
 		$_POST            = array();
+		$_COOKIE          = array();
 
 		array_map( 'unlink', glob( ROPT_PATH . 'build/*' ) ?: array() );
 	}
@@ -281,8 +330,11 @@ final class Kinsta_Full_Purge_Only_Stub {
 /** The slice of WP_Taxonomy the page cache reads. */
 final class WP_Taxonomy { /** @var array<int, string> */ public array $object_type = array(); }
 
-/** The slice of WP_Post the page cache reads. */
+/** The slice of WP_Post the page cache and the product image correction read. */
 class WP_Post { public int $ID = 0; public string $post_type = 'post'; public function __construct( int $id = 0, string $post_type = 'post' ) { $this->ID = $id; $this->post_type = $post_type; } }
+
+/** The slice of WP_Term the first row correction reads. */
+class WP_Term { public int $term_id = 0; public string $taxonomy = ''; public string $name = ''; public function __construct( int $id = 0, string $taxonomy = 'product_cat' ) { $this->term_id = $id; $this->taxonomy = $taxonomy; } }
 
 if ( ! class_exists( 'WP_Error' ) ) {
 	/**
@@ -354,6 +406,8 @@ function wp_add_inline_style( $handle, $data ) { WP_Stub::$inline_styles[ (strin
 function wp_style_add_data( $handle, $key, $value ) {}
 function wp_set_script_translations( $handle, $domain, $path ) { WP_Stub::$enqueued[] = array( 'handle' => $handle . ':i18n' ); }
 function wp_add_inline_script( $handle, $js, $position ) { WP_Stub::$inline[] = $js; }
+function wp_dequeue_script( $handle ) { WP_Stub::$dequeued[] = (string) $handle; }
+function get_page_uri( $page = 0 ) { return WP_Stub::$page_uris[ (int) $page ] ?? false; }
 function wp_print_inline_script_tag( $data, $attributes = array() ) {
 	$attrs = '';
 	foreach ( (array) $attributes as $name => $value ) {
@@ -374,6 +428,13 @@ function do_action( $hook, ...$args ) { WP_Stub::$fired[] = array_merge( array( 
 function is_post_type_viewable( $type ) { return in_array( $type, WP_Stub::$viewable_types, true ); }
 function is_taxonomy_viewable( $taxonomy ) { return in_array( $taxonomy, WP_Stub::$viewable_taxonomies, true ); }
 function get_stylesheet() { return 'porto-child'; }
+function get_post_status( $post = null ) { return WP_Stub::$post_status[ (int) $post ] ?? 'publish'; }
+function wp_get_post_parent_id( $post = null ) { return WP_Stub::$parents[ (int) $post ] ?? 0; }
+function get_post_meta( $post_id, $key = '', $single = false ) {
+	$value = WP_Stub::$post_meta[ (int) $post_id ][ $key ] ?? null;
+	// As core: one value when $single, else the list of every row's value.
+	return $single ? ( $value ?? '' ) : ( null === $value ? array() : array( $value ) );
+}
 function get_taxonomy( $taxonomy ) {
 	if ( ! isset( WP_Stub::$taxonomy_types[ $taxonomy ] ) ) { return false; }
 	$object              = new WP_Taxonomy();
@@ -482,14 +543,25 @@ function wp_has_noncharacters( string $text ): bool {
 /** The parent theme's directory: Porto's, unless the process runs with ROPT_TESTS_PORTO=none. */
 function get_template() { return function_exists( 'porto_minicart' ) ? 'porto' : 'twentytwentyfive'; }
 
+function get_post_thumbnail_id( $post = null ) { return null === $post ? WP_Stub::$featured_id : ( WP_Stub::$thumbnails[ (int) $post ] ?? WP_Stub::$featured_id ); }
 function get_queried_object_id() { return WP_Stub::$queried_id; }
-// Speculative loading, from WordPress 6.8; ROPT_TESTS_WP=6.6 boots a site from before it.
+function get_queried_object() { return WP_Stub::$queried_object; }
+function get_metadata( $type, $id, $key = '', $single = false ) { return WP_Stub::$metadata[ $type ][ (int) $id ][ $key ] ?? ( $single ? '' : array() ); }
+// Core's auto sizes, from WordPress 6.7, and speculative loading, from 6.8;
+// ROPT_TESTS_WP=6.6 boots a site from before both.
 if ( '6.6' !== getenv( 'ROPT_TESTS_WP' ) ) {
+	function wp_sizes_attribute_includes_valid_auto( string $sizes_attr ): bool {
+		list( $first_size ) = explode( ',', $sizes_attr, 2 );
+		return 'auto' === strtolower( trim( $first_size, " \t\f\r\n" ) );
+	}
+
 	function wp_get_speculation_rules_configuration() { return array( 'mode' => 'prefetch', 'eagerness' => 'conservative' ); }
 }
 function get_the_ID() { return WP_Stub::$the_id; }
 function in_the_loop() { return WP_Stub::$in_the_loop; }
 function is_main_query() { return WP_Stub::$main_query; }
+function is_search() { return WP_Stub::$is_search; }
+function get_query_var( $key, $default_value = '' ) { return WP_Stub::$query_vars[ $key ] ?? $default_value; }
 
 /*
  * The WooCommerce screens are WordPress pages too, and the shop is one whenever
