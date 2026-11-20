@@ -4,8 +4,8 @@
  *
  * The form draws itself, so the guarantees WC_Admin_Settings would give for
  * free have to be earned here: an undeclared key is never stored, a structural
- * row is never stored, a list keeps only the ids its field offers, and a value
- * read back from the database is escaped before it reaches the page.
+ * row is never stored, and a value read back from the database is escaped
+ * before it reaches the page.
  *
  * @package RhinnoIT\Optimizer
  */
@@ -120,46 +120,6 @@ final class SettingsPageTest extends TestCase {
 	}
 
 	/**
-	 * A list keeps only the ids its own field offers, each once.
-	 *
-	 * @return void
-	 */
-	public function test_a_list_keeps_only_the_ids_its_field_offers(): void {
-		$values = Settings_Page::sanitize_submission(
-			Settings::fields(),
-			array(
-				'ropt_scope_wordpress'   => array( 'posts', 'cart', 'posts', array( 'pages' ), 7, 'nonsense', 'pages' ),
-				'ropt_scope_woocommerce' => 'cart',
-			)
-		);
-
-		$this->assertSame( array( 'posts', 'pages' ), $values['ropt_scope_wordpress'], 'A WooCommerce id, a duplicate, a nested array and an unknown id all go.' );
-		$this->assertSame( array(), $values['ropt_scope_woocommerce'], 'Not a list: not a form this plugin drew.' );
-		$this->assertSame(
-			array(),
-			Settings_Page::sanitize_submission( Settings::fields(), array() )['ropt_scope_wordpress'],
-			'A list with every box unchecked is absent from the post, and stores the empty list.'
-		);
-	}
-
-	/**
-	 * The form shows both sections on a shop.
-	 *
-	 * @return void
-	 */
-	public function test_a_shop_sees_both_sections(): void {
-		$html = $this->form();
-
-		$this->assertStringContainsString( '<h2 class="ropt-card__title">WordPress</h2>', $html );
-		$this->assertStringContainsString( '<h2 class="ropt-card__title">WooCommerce</h2>', $html );
-		$this->assertLessThan( strpos( $html, '>WooCommerce</h2>' ), strpos( $html, '>WordPress</h2>' ), 'The platform before the addition.' );
-		$this->assertSame( 3, substr_count( $html, '<section class="ropt-card">' ), 'The master switch, then one card per platform.' );
-		$this->assertSame( 2, substr_count( $html, '<h2' ), 'The master switch has no heading of its own.' );
-		$this->assertSame( substr_count( $html, '<section' ), substr_count( $html, '</section>' ), 'Every card closes what it opened.' );
-		$this->assertSame( substr_count( $html, '<div' ), substr_count( $html, '</div>' ), 'Every row closes what it opened.' );
-	}
-
-	/**
 	 * Every checkbox is drawn as an on/off switch, and its row label toggles it.
 	 *
 	 * Still a real checkbox, so the save logic above does not change; the role
@@ -172,27 +132,11 @@ final class SettingsPageTest extends TestCase {
 		$html       = $this->form();
 		$checkboxes = substr_count( $html, 'type="checkbox"' );
 
-		$this->assertSame( 9, $checkboxes, 'The master switch, three WordPress contexts and five WooCommerce ones.' );
+		$this->assertSame( 1, $checkboxes, 'The master switch alone.' );
 		$this->assertSame( $checkboxes, substr_count( $html, 'type="checkbox" role="switch" class="ropt-switch"' ) );
 		$this->assertStringContainsString( '<label class="ropt-row__label" for="ropt_enabled">Enable</label>', $html );
 		$this->assertStringContainsString( 'aria-describedby="ropt_enabled-desc"', $html );
 		$this->assertStringContainsString( '<p class="ropt-row__desc" id="ropt_enabled-desc">', $html );
-	}
-
-	/**
-	 * A list is a labelled group with one switch per choice, posted as a list.
-	 *
-	 * @return void
-	 */
-	public function test_a_list_is_drawn_as_a_labelled_group_of_switches(): void {
-		$html = $this->form();
-
-		$this->assertStringContainsString( '<div class="ropt-group" role="group" aria-labelledby="ropt_scope_wordpress-label" aria-describedby="ropt_scope_wordpress-desc">', $html );
-		$this->assertStringContainsString( '<h3 class="ropt-card__group" id="ropt_scope_wordpress-label">Load the script on</h3>', $html );
-		$this->assertStringContainsString( '<label class="ropt-row__label" for="ropt_scope_wordpress-posts">Blog posts</label>', $html );
-		$this->assertStringContainsString( 'id="ropt_scope_wordpress-posts" name="ropt_scope_wordpress[]" value="posts"', $html );
-		$this->assertSame( 3, substr_count( $html, 'name="ropt_scope_wordpress[]"' ), 'One switch per WordPress context.' );
-		$this->assertSame( 5, substr_count( $html, 'name="ropt_scope_woocommerce[]"' ), 'One switch per WooCommerce context.' );
 	}
 
 	/**
@@ -204,15 +148,13 @@ final class SettingsPageTest extends TestCase {
 	 * @return void
 	 */
 	public function test_a_stored_value_cannot_reach_the_page(): void {
-		WP_Stub::$options['ropt_enabled']         = '"><script>alert(1)</script>';
-		WP_Stub::$options['ropt_scope_wordpress'] = array( '"><script>alert(2)</script>', 'posts' );
+		WP_Stub::$options['ropt_enabled'] = '"><script>alert(1)</script>';
 
 		$html = $this->form();
 
 		$this->assertDoesNotMatchRegularExpression( '/<script\b/i', $html );
 		$this->assertStringNotContainsString( 'alert(', $html );
 		$this->assertDoesNotMatchRegularExpression( '/name="ropt_enabled" value="yes"[^>]* checked/', $html, 'And it reads as off.' );
-		$this->assertMatchesRegularExpression( '/name="ropt_scope_wordpress\[\]" value="posts" checked="checked"/', $html, 'The known id next to it still reads as on.' );
 	}
 
 	/**
@@ -239,31 +181,6 @@ final class SettingsPageTest extends TestCase {
 	}
 
 	/**
-	 * A choice is drawn checked exactly when its list holds it.
-	 *
-	 * @return void
-	 */
-	public function test_a_choice_is_checked_exactly_when_its_list_holds_it(): void {
-		WP_Stub::$options['ropt_scope_wordpress'] = array( 'pages' );
-
-		$html = $this->form();
-
-		$this->assertMatchesRegularExpression( '/value="pages" checked="checked"/', $html );
-		$this->assertDoesNotMatchRegularExpression( '/value="posts" checked/', $html );
-
-		// A row that is not a list, or holds the id as something else, checks nothing.
-		foreach ( array( 'pages', array( array( 'pages' ) ), array( 1 ) ) as $stored ) {
-			WP_Stub::$options['ropt_scope_wordpress'] = $stored;
-
-			$this->assertDoesNotMatchRegularExpression(
-				'/name="ropt_scope_wordpress\[\]" value="[a-z]+" checked/',
-				$this->form(),
-				sprintf( 'Drawn on for %s.', var_export( $stored, true ) )
-			);
-		}
-	}
-
-	/**
 	 * Nothing has been retired, so a form this version drew is never turned away.
 	 *
 	 * @return void
@@ -283,18 +200,14 @@ final class SettingsPageTest extends TestCase {
 	 * @return void
 	 */
 	public function test_a_form_that_lists_nothing_it_drew_is_refused(): void {
-		WP_Stub::$options['ropt_enabled']         = 'no';
-		WP_Stub::$options['ropt_scope_wordpress'] = array();
+		WP_Stub::$options['ropt_enabled'] = 'no';
 
 		foreach ( array( null, 'ropt_enabled', array(), array( array( 'ropt_enabled' ) ) ) as $drawn ) {
 			$this->assertTrue( Settings_Page::drawn_by_an_older_version( null === $drawn ? array() : array( 'ropt_drawn' => $drawn ) ) );
 		}
 
 		// What the form posted before it drew itself.
-		$_POST = array(
-			'ropt_enabled'         => '1',
-			'ropt_scope_wordpress' => array( 'posts', 'pages' ),
-		);
+		$_POST = array( 'ropt_enabled' => '1' );
 
 		try {
 			( new Settings_Page() )->save();
@@ -306,7 +219,6 @@ final class SettingsPageTest extends TestCase {
 		$this->assertStringNotContainsString( 'updated=1', (string) WP_Stub::$redirect, 'Nothing was saved, so it must not say so.' );
 		$this->assertSame( array(), WP_Stub::$fired, 'Nor tell the group it was saved.' );
 		$this->assertSame( 'no', WP_Stub::$options['ropt_enabled'] );
-		$this->assertSame( array(), WP_Stub::$options['ropt_scope_wordpress'] );
 	}
 
 	/**
@@ -324,51 +236,6 @@ final class SettingsPageTest extends TestCase {
 	}
 
 	/**
-	 * A field that was not on the screen is not stored as unchecked.
-	 *
-	 * The field list is rebuilt at save time. If WooCommerce became available
-	 * while the form was open, its section was never drawn, and storing its
-	 * absent list as empty would undo a choice nobody touched.
-	 *
-	 * @return void
-	 */
-	public function test_a_field_that_was_not_drawn_is_left_alone(): void {
-		$fields = Settings_Page::fields_to_save(
-			Settings::fields(),
-			array( 'ropt_drawn' => array( 'ropt_enabled', 'ropt_scope_wordpress' ) )
-		);
-
-		$this->assertSame( array( 'ropt_enabled', 'ropt_scope_wordpress' ), array_column( $fields, 'id' ) );
-		$this->assertArrayNotHasKey(
-			'ropt_scope_woocommerce',
-			Settings_Page::sanitize_submission( $fields, array() ),
-			'Undrawn, so its stored value survives.'
-		);
-	}
-
-	/**
-	 * The drawn list can narrow the save but never widen it.
-	 *
-	 * @return void
-	 */
-	public function test_the_drawn_list_cannot_name_a_field_this_site_lacks(): void {
-		$wordpress_only = array_values(
-			array_filter(
-				Settings::fields(),
-				static fn ( array $field ): bool => 'woocommerce' !== ( $field['requires'] ?? '' )
-			)
-		);
-
-		$fields = Settings_Page::fields_to_save(
-			$wordpress_only,
-			array( 'ropt_drawn' => array( 'ropt_scope_woocommerce', 'siteurl', array( 'x' ) ) )
-		);
-
-		$this->assertSame( array(), $fields, 'A crafted marker is intersected with what the site can use.' );
-		$this->assertSame( array(), Settings_Page::fields_to_save( $wordpress_only, array( 'ropt_drawn' => 'not a list' ) ) );
-	}
-
-	/**
 	 * Every option the form draws carries its marker, once.
 	 *
 	 * @return void
@@ -376,7 +243,7 @@ final class SettingsPageTest extends TestCase {
 	public function test_every_drawn_option_carries_its_marker(): void {
 		$html = $this->form();
 
-		foreach ( array( 'ropt_enabled', 'ropt_scope_wordpress', 'ropt_scope_woocommerce' ) as $id ) {
+		foreach ( array( 'ropt_enabled' ) as $id ) {
 			$this->assertSame( 1, substr_count( $html, sprintf( 'name="ropt_drawn[]" value="%s"', $id ) ), sprintf( '%s is drawn once, so it is marked once.', $id ) );
 		}
 

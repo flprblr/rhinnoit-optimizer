@@ -45,9 +45,9 @@ final class HookArityTest extends TestCase {
 			++$checked;
 		}
 
-		// The listed services hook seven methods: Assets 2, Menu 3, Settings_Page
+		// The listed services hook six methods: Assets 1, Menu 3, Settings_Page
 		// 1 through Menu, and Plugin_Links 1. Fewer means the list above lost a
 		// service; raise it with every service added, lower it with one removed.
-		$this->assertGreaterThanOrEqual( 7, $checked, 'Most hooks went unchecked, so this case proves little.' );
+		$this->assertGreaterThanOrEqual( 6, $checked, 'Most hooks went unchecked, so this case proves little.' );
 	}
 }

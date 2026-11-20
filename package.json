@@ -3,8 +3,8 @@
 	"private": true,
 	"license": "GPL-2.0-or-later",
 	"scripts": {
-		"build": "wp-scripts build src/frontend.js src/admin.js --output-path=build",
-		"start": "wp-scripts start src/frontend.js src/admin.js --output-path=build",
+		"build": "wp-scripts build src/admin.js --output-path=build",
+		"start": "wp-scripts start src/admin.js --output-path=build",
 		"format": "wp-scripts format src",
 		"lint:js": "wp-scripts lint-js src",
 		"lint:css": "wp-scripts lint-style 'src/**/*.scss'"

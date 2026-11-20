@@ -269,23 +269,6 @@ final class AdminTest extends TestCase {
 		$this->assertStringNotContainsString( 'nav-tab', $html, 'One screen does not need a tab bar.' );
 	}
 
-	public function test_a_save_leaves_every_undrawn_option_alone(): void {
-		// A field the form did not draw is absent from the post, exactly like
-		// an unchecked box. Only the drawn list tells them apart.
-		WP_Stub::$options['ropt_scope_wordpress']   = array( 'posts' );
-		WP_Stub::$options['ropt_scope_woocommerce'] = array( 'cart' );
-
-		$_POST = array(
-			'ropt_enabled' => 'yes',
-			'ropt_drawn'   => array( 'ropt_enabled' ),
-		);
-
-		$this->save();
-
-		$this->assertSame( array( 'posts' ), WP_Stub::$options['ropt_scope_wordpress'] );
-		$this->assertSame( array( 'cart' ), WP_Stub::$options['ropt_scope_woocommerce'] );
-	}
-
 	public function test_saving_requires_the_capability(): void {
 		WP_Stub::$can = false;
 
@@ -323,20 +306,19 @@ final class AdminTest extends TestCase {
 	}
 
 	public function test_a_valid_save_redirects_back_to_the_page(): void {
+		// Off before the save, so only the save can turn it on.
+		WP_Stub::$options['ropt_enabled'] = 'no';
+
 		// What a browser posts: the checked boxes, and the list of fields the
-		// form drew. Every box of the WooCommerce list was drawn and left
-		// unchecked, so the list is absent from the post altogether.
+		// form drew.
 		$_POST = array(
-			'ropt_enabled'         => 'yes',
-			'ropt_scope_wordpress' => array( 'posts' ),
-			'ropt_drawn'           => array( 'ropt_enabled', 'ropt_scope_wordpress', 'ropt_scope_woocommerce' ),
+			'ropt_enabled' => 'yes',
+			'ropt_drawn'   => array( 'ropt_enabled' ),
 		);
 
 		$this->save();
 
 		$this->assertSame( 'yes', WP_Stub::$options['ropt_enabled'] ?? null, 'A checked box is stored.' );
-		$this->assertSame( array( 'posts' ), WP_Stub::$options['ropt_scope_wordpress'] ?? null );
-		$this->assertSame( array(), WP_Stub::$options['ropt_scope_woocommerce'] ?? null, 'A list the browser did not send was emptied.' );
 		$this->assertContains( array( Settings_Page::SAVED_HOOK ), WP_Stub::$fired, 'The group hears every save, or the page cache serves the old pages.' );
 		$this->assertStringContainsString( 'page=' . Menu::PAGE_SLUG, (string) WP_Stub::$redirect );
 		$this->assertStringContainsString( 'updated=1', (string) WP_Stub::$redirect );

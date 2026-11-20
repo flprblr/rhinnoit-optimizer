@@ -5,11 +5,10 @@
  * the newer WooCommerce screens use, drawn over the plain markup
  * Settings_Page prints: a card per section, a row per setting with its text
  * on the left and its control on the right, and checkboxes drawn as the
- * component's toggle; a multicheck is a run of those rows under its label.
- * Everything is scoped under .ropt-settings, which also lifts these rules
- * above core's own h2, p, label and input[type="checkbox"] rules, including
- * the checkmark core draws in ::before. Without this sheet the form is plain
- * labels and checkboxes that work the same.
+ * component's toggle. Everything is scoped under .ropt-settings, which also
+ * lifts these rules above core's own h2, p, label and input[type="checkbox"]
+ * rules, including the checkmark core draws in ::before. Without this sheet
+ * the form is plain labels and checkboxes that work the same.
  */
 
 $ropt-accent: var(--wp-admin-theme-color, #2271b1);
@@ -54,16 +53,6 @@ $ropt-gray-100: #f0f0f0;
 		line-height: 1.4;
 		letter-spacing: 0.04em;
 		text-transform: uppercase;
-	}
-
-	// A multicheck: the group label above, one line saying what the list is
-	// for, then one row per choice.
-	.ropt-group__desc {
-		margin: 0;
-		padding: 0 24px 4px;
-		color: $ropt-gray-700;
-		font-size: 13px;
-		line-height: 1.5;
 	}
 
 	.ropt-row {
@@ -127,7 +116,6 @@ $ropt-gray-100: #f0f0f0;
 
 		.ropt-card__title,
 		.ropt-card__group,
-		.ropt-group__desc,
 		.ropt-row {
 			padding-right: 16px;
 			padding-left: 16px;

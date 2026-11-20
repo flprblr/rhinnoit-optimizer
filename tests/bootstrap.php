@@ -130,15 +130,11 @@ final class WP_Stub {
 	 */
 	public static function reset(): void {
 		/*
-		 * A configured plugin: on, and loading on the WooCommerce pages. The
-		 * shipped defaults are empty on purpose - nothing loads until somebody
-		 * picks where - so the cases about manifests and enqueueing would have
-		 * nothing to enqueue without this.
+		 * A configured plugin: the master switch on, whatever it ships as, so a
+		 * case starts from a plugin that runs and one about a plugin switched
+		 * off says so itself.
 		 */
-		self::$options = array(
-			'ropt_enabled'           => 'yes',
-			'ropt_scope_woocommerce' => array( 'shop', 'product', 'cart', 'checkout', 'account' ),
-		);
+		self::$options    = array( 'ropt_enabled' => 'yes' );
 		self::$transients = array();
 		self::$enqueued   = array();
 		self::$inline     = array();
@@ -301,8 +297,9 @@ function remove_submenu_page( $menu_slug, $submenu_slug ) {
 
 /*
  * The WooCommerce screens are WordPress pages too, and the shop is one whenever
- * its page is what got queried. Modelling that is the point: it is what the
- * exclusions in Assets::is_plain_page() exist for.
+ * its page is what got queried. Modelling that is the point: on a real shop a
+ * bare is_page() is true on all of them, and code that means a plain page has
+ * to rule them out itself.
  */
 function is_page() { return in_array( WP_Stub::$page_type, array( 'page', 'shop', 'cart', 'checkout', 'account' ), true ); }
 /*

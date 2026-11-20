@@ -63,49 +63,5 @@ msgid "WordPress"
 msgstr "WordPress"
 
 #: includes/class-settings.php
-msgid "Load the script on"
-msgstr "Cargar el script en"
-
-#: includes/class-settings.php
-msgid "The pages WordPress itself serves. While both lists are empty the script loads nowhere. Every page of the site wins over everything else, and covers what neither list names: archives, search, custom post types."
-msgstr "Las páginas que sirve el propio WordPress. Mientras ambas listas estén vacías, el script no se carga en ninguna parte. “Todas las páginas del sitio” se impone a todo lo demás y cubre lo que ninguna lista nombra: archivos, búsquedas y tipos de contenido personalizados."
-
-#: includes/class-settings.php
 msgid "WooCommerce"
 msgstr "WooCommerce"
-
-#: includes/class-settings.php
-msgid "The screens WooCommerce owns."
-msgstr "Las pantallas propias de WooCommerce."
-
-#: includes/class-settings.php
-msgid "Shop and category pages"
-msgstr "Tienda y páginas de categoría"
-
-#: includes/class-settings.php
-msgid "Single product"
-msgstr "Producto individual"
-
-#: includes/class-settings.php
-msgid "Cart"
-msgstr "Carrito"
-
-#: includes/class-settings.php
-msgid "Checkout"
-msgstr "Finalizar compra"
-
-#: includes/class-settings.php
-msgid "My account"
-msgstr "Mi cuenta"
-
-#: includes/class-settings.php
-msgid "Blog posts"
-msgstr "Entradas del blog"
-
-#: includes/class-settings.php
-msgid "Pages, WooCommerce ones aside"
-msgstr "Páginas, salvo las de WooCommerce"
-
-#: includes/class-settings.php
-msgid "Every page of the site"
-msgstr "Todas las páginas del sitio"

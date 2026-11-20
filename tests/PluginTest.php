@@ -33,80 +33,13 @@ final class PluginTest extends TestCase {
 			);
 		}
 
-		foreach ( array( 'frontend', 'admin' ) as $bundle ) {
+		foreach ( array( 'admin' ) as $bundle ) {
 			$this->assertStringContainsString(
 				"delete_transient( 'ropt_broken_build_" . $bundle . "' )",
 				$uninstall,
 				sprintf( 'The %s bundle leaves a throttle transient behind.', $bundle )
 			);
 		}
-	}
-
-	public function test_defaults_come_from_the_field_definition(): void {
-		$this->assertSame(
-			array(
-				'ropt_enabled'           => 'no',
-				'ropt_scope_wordpress'   => array(),
-				'ropt_scope_woocommerce' => array(),
-			),
-			Settings::defaults()
-		);
-	}
-
-	public function test_a_fresh_install_loads_the_script_nowhere(): void {
-		WP_Stub::$options = Settings::defaults();
-
-		$this->assertSame(
-			array(),
-			Settings::frontend_contexts(),
-			'Both lists ship empty on purpose: nothing loads until somebody picks where.'
-		);
-	}
-
-	/**
-	 * What the two lists hold, and the contexts that come out of them.
-	 *
-	 * @return array<string, array<int, mixed>>
-	 */
-	public static function storedScopes(): array {
-		return array(
-			'both lists chosen'        => array( array( 'cart' ), array( 'posts' ), array( 'cart', 'posts' ) ),
-			'unknown ids discarded'    => array( array( 'cart', 'nonsense' ), array(), array( 'cart' ) ),
-			'elements that are not strings' => array( array( 'cart', array( 'x' ), 7 ), array(), array( 'cart' ) ),
-			'a woo id in the wp list'  => array( array(), array( 'cart' ), array() ),
-			'a wp id in the woo list'  => array( array( 'posts' ), array(), array() ),
-			'every box unchecked'      => array( array(), array(), array() ),
-			'woo list not an array'    => array( 'cart', array(), array() ),
-			'woo list never saved'     => array( null, array(), array() ),
-			'wp list never saved'      => array( array( 'cart' ), null, array( 'cart' ) ),
-		);
-	}
-
-	/**
-	 * Read on every storefront request, so it takes whatever the rows hold.
-	 *
-	 * A value that is not an array cannot be filtered - array_filter() on a
-	 * string is a TypeError - so it falls back to what the field declares,
-	 * which in this template is nothing, the same as unchecking every box.
-	 * Each list is filtered against its own field's choices, so an id the other
-	 * list owns does not survive a crafted post.
-	 *
-	 * @param mixed              $woo      Value of the WooCommerce list.
-	 * @param mixed              $wordpress Value of the WordPress list.
-	 * @param array<int, string> $expected Contexts the plugin acts on.
-	 * @return void
-	 */
-	#[DataProvider( 'storedScopes' )]
-	public function test_the_stored_lists_are_filtered_before_they_are_used( $woo, $wordpress, array $expected ): void {
-		foreach ( array( 'ropt_scope_woocommerce' => $woo, 'ropt_scope_wordpress' => $wordpress ) as $option => $value ) {
-			if ( null === $value ) {
-				unset( WP_Stub::$options[ $option ] );
-			} else {
-				WP_Stub::$options[ $option ] = $value;
-			}
-		}
-
-		$this->assertSame( $expected, Settings::frontend_contexts() );
 	}
 
 	public function test_every_structural_field_is_flagged_so_it_cannot_become_an_option(): void {

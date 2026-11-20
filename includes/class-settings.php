@@ -84,14 +84,6 @@ final class Settings {
 				'is_option' => false,
 			),
 			array(
-				'id'      => self::OPTION_PREFIX . 'scope_wordpress',
-				'type'    => 'multicheck',
-				'title'   => __( 'Load the script on', 'rhinnoit-optimizer' ),
-				'desc'    => __( 'The pages WordPress itself serves. While both lists are empty the script loads nowhere. Every page of the site wins over everything else, and covers what neither list names: archives, search, custom post types.', 'rhinnoit-optimizer' ),
-				'options' => self::wordpress_scope_choices(),
-				'default' => array(),
-			),
-			array(
 				'id'        => self::OPTION_PREFIX . 'wordpress',
 				'type'      => 'sectionend',
 				'is_option' => false,
@@ -103,15 +95,6 @@ final class Settings {
 				'title'     => __( 'WooCommerce', 'rhinnoit-optimizer' ),
 				'is_option' => false,
 				'requires'  => self::REQUIRES_WOOCOMMERCE,
-			),
-			array(
-				'id'       => self::OPTION_PREFIX . 'scope_woocommerce',
-				'type'     => 'multicheck',
-				'title'    => __( 'Load the script on', 'rhinnoit-optimizer' ),
-				'desc'     => __( 'The screens WooCommerce owns.', 'rhinnoit-optimizer' ),
-				'options'  => self::woocommerce_scope_choices(),
-				'default'  => array(),
-				'requires' => self::REQUIRES_WOOCOMMERCE,
 			),
 			array(
 				'id'        => self::OPTION_PREFIX . 'woocommerce',
@@ -302,101 +285,6 @@ final class Settings {
 		}
 
 		return array_values( array_unique( $retired ) );
-	}
-
-	/**
-	 * The WooCommerce contexts, as id => label.
-	 *
-	 * The ids are the contract: Assets::scope_matches() maps each one to a
-	 * conditional tag, and anything not in this list is discarded when the
-	 * option is read.
-	 *
-	 * @return array<string, string>
-	 */
-	public static function woocommerce_scope_choices(): array {
-		return array(
-			'shop'     => __( 'Shop and category pages', 'rhinnoit-optimizer' ),
-			'product'  => __( 'Single product', 'rhinnoit-optimizer' ),
-			'cart'     => __( 'Cart', 'rhinnoit-optimizer' ),
-			'checkout' => __( 'Checkout', 'rhinnoit-optimizer' ),
-			'account'  => __( 'My account', 'rhinnoit-optimizer' ),
-		);
-	}
-
-	/**
-	 * The WordPress contexts, as id => label.
-	 *
-	 * "Pages, WooCommerce ones aside" is worded that way because cart, checkout,
-	 * my account and often the shop are WordPress pages too: without the
-	 * exclusions in Assets::is_plain_page() that choice would load the bundle on
-	 * screens the other list did not ask for.
-	 *
-	 * @return array<string, string>
-	 */
-	public static function wordpress_scope_choices(): array {
-		return array(
-			'posts'      => __( 'Blog posts', 'rhinnoit-optimizer' ),
-			'pages'      => __( 'Pages, WooCommerce ones aside', 'rhinnoit-optimizer' ),
-			'everywhere' => __( 'Every page of the site', 'rhinnoit-optimizer' ),
-		);
-	}
-
-	/**
-	 * Every context the shop manager picked, from both lists.
-	 *
-	 * The WooCommerce list is read only where its section is on the screen: on
-	 * a site without a supported WooCommerce it is the WooCommerce half, its
-	 * stored value is kept for the day WooCommerce comes back, and the
-	 * conditional tags its ids map to may not exist at all.
-	 *
-	 * @return array<int, string>
-	 */
-	public static function frontend_contexts(): array {
-		$woocommerce = Plugin::woocommerce_is_supported()
-			? self::chosen( 'scope_woocommerce', self::woocommerce_scope_choices() )
-			: array();
-
-		return array_values(
-			array_unique(
-				array_merge(
-					$woocommerce,
-					self::chosen( 'scope_wordpress', self::wordpress_scope_choices() )
-				)
-			)
-		);
-	}
-
-	/**
-	 * One stored list, filtered to the ids its own field can produce.
-	 *
-	 * This runs on every storefront request, so it takes whatever the row holds.
-	 * A value that is not an array - a corrupt row, another plugin writing the
-	 * option - cannot be filtered at all, since array_filter() on a string is a
-	 * TypeError on every page of the shop, so it falls back to whatever the
-	 * field declares. In this template that is nothing, which is also what
-	 * Settings_Page::sanitize_submission() stores when every box is unchecked:
-	 * both mean the script loads nowhere. A plugin that declares a real default
-	 * gets that default back instead.
-	 *
-	 * Each list is checked against its own choices, not against both, so an id
-	 * that field could never have offered does not survive a crafted post.
-	 *
-	 * @param string                $key     Option key without the prefix.
-	 * @param array<string, string> $choices The field's own choices.
-	 * @return array<int, string>
-	 */
-	private static function chosen( string $key, array $choices ): array {
-		$stored = self::get( $key, null );
-
-		if ( ! is_array( $stored ) ) {
-			$fallback = self::defaults()[ self::OPTION_PREFIX . $key ] ?? array();
-
-			return is_array( $fallback ) ? array_values( array_filter( $fallback, 'is_string' ) ) : array();
-		}
-
-		// is_string() before comparing: an element can be anything, and casting
-		// an array to string is a warning on a storefront page.
-		return array_values( array_intersect( array_filter( $stored, 'is_string' ), array_keys( $choices ) ) );
 	}
 
 	/**

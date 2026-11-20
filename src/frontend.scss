@@ -1,9 +1,0 @@
-/*
- * Storefront styles.
- *
- * Empty on purpose, like frontend.js: the storefront entry points are part of
- * the shell, so a plugin that needs CSS writes it here instead of wiring a
- * bundle up first. The build emits a one-byte build/frontend.css until then,
- * which is a request the shop can afford; an example rule it would have to
- * delete is not.
- */

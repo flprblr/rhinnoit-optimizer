@@ -58,49 +58,5 @@ msgid "WordPress"
 msgstr ""
 
 #: includes/class-settings.php
-msgid "Load the script on"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "The pages WordPress itself serves. While both lists are empty the script loads nowhere. Every page of the site wins over everything else, and covers what neither list names: archives, search, custom post types."
-msgstr ""
-
-#: includes/class-settings.php
 msgid "WooCommerce"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "The screens WooCommerce owns."
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Shop and category pages"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Single product"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Cart"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Checkout"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "My account"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Blog posts"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Pages, WooCommerce ones aside"
-msgstr ""
-
-#: includes/class-settings.php
-msgid "Every page of the site"
 msgstr ""

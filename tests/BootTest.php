@@ -37,7 +37,6 @@ final class BootTest extends TestCase {
 		foreach (
 			array(
 				'init:load_textdomain',
-				'wp_enqueue_scripts:enqueue_frontend',
 				'admin_enqueue_scripts:enqueue_admin',
 				'admin_init:check_version',
 				'admin_menu:register_pages',

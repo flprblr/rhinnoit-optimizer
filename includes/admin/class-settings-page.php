@@ -16,10 +16,9 @@ defined( 'ABSPATH' ) || exit;
  *
  * The form draws its own fields: WC_Admin_Settings is the right tool on a shop
  * and does not exist anywhere else, and the plugin runs on plain WordPress too.
- * It knows four types - title, sectionend, checkbox and multicheck - and
- * adding one means adding it to render_field() and to sanitize_submission()
- * together; a type one knows and the other does not is either unsaveable or
- * unsafe.
+ * It knows three types - title, sectionend and checkbox - and adding one
+ * means adding it to render_field() and to sanitize_submission() together; a
+ * type one knows and the other does not is either unsaveable or unsafe.
  *
  * The layout is the card-and-row pattern of @wordpress/components - the one
  * Site Health and the newer WooCommerce screens use - drawn in PHP and styled
@@ -27,9 +26,8 @@ defined( 'ABSPATH' ) || exit;
  * card, a field is a row with its title and one line of description on the
  * left and its control on the right. A checkbox is drawn as an on/off switch:
  * still a real checkbox, so the form posts exactly what it did, with
- * role="switch" for screen readers. A multicheck is a group of those, one per
- * choice, posted as one list. Without the stylesheet everything degrades to
- * plain labels and checkboxes that work the same.
+ * role="switch" for screen readers. Without the stylesheet everything
+ * degrades to plain labels and checkboxes that work the same.
  */
 final class Settings_Page {
 
@@ -136,17 +134,7 @@ final class Settings_Page {
 			return;
 		}
 
-		if ( '' === $id ) {
-			return;
-		}
-
-		if ( 'multicheck' === $type ) {
-			$this->render_multicheck( $field, $id, $title, $desc );
-
-			return;
-		}
-
-		if ( 'checkbox' !== $type ) {
+		if ( '' === $id || 'checkbox' !== $type ) {
 			return;
 		}
 
@@ -174,57 +162,6 @@ final class Settings_Page {
 
 		printf(
 			'<input type="hidden" name="%1$s[]" value="%2$s"/></div></div>',
-			esc_attr( self::DRAWN_FIELD ),
-			esc_attr( $id )
-		);
-	}
-
-	/**
-	 * Prints a multicheck: a labelled group of switches, one per choice.
-	 *
-	 * The field title is the group's label and the choices are its rows, all
-	 * posted under one name as a list. What is printed of the stored value is
-	 * only which choices it holds, compared as strings, so markup written into
-	 * the row never reaches the page.
-	 *
-	 * @param array<string, mixed> $field One field definition.
-	 * @param string               $id    Option id.
-	 * @param string               $title Field title.
-	 * @param string               $desc  Field description.
-	 * @return void
-	 */
-	private function render_multicheck( array $field, string $id, string $title, string $desc ): void {
-		$this->group = '';
-
-		$choices = is_array( $field['options'] ?? null ) ? $field['options'] : array();
-		$stored  = get_option( $id, $field['default'] ?? array() );
-		$stored  = is_array( $stored ) ? array_filter( $stored, 'is_string' ) : array();
-
-		printf(
-			'<div class="ropt-group" role="group" aria-labelledby="%1$s-label"%2$s><h3 class="ropt-card__group" id="%1$s-label">%3$s</h3>',
-			esc_attr( $id ),
-			'' !== $desc ? sprintf( ' aria-describedby="%s-desc"', esc_attr( $id ) ) : '',
-			esc_html( $title )
-		);
-
-		if ( '' !== $desc ) {
-			printf( '<p class="ropt-group__desc" id="%1$s-desc">%2$s</p>', esc_attr( $id ), esc_html( $desc ) );
-		}
-
-		foreach ( $choices as $choice => $label ) {
-			$choice = (string) $choice;
-
-			printf(
-				'<div class="ropt-row"><div class="ropt-row__text"><label class="ropt-row__label" for="%1$s-%2$s">%3$s</label></div><div class="ropt-row__control"><input type="checkbox" role="switch" class="ropt-switch" id="%1$s-%2$s" name="%1$s[]" value="%2$s"%4$s/></div></div>',
-				esc_attr( $id ),
-				esc_attr( $choice ),
-				esc_html( is_string( $label ) ? $label : $choice ),
-				in_array( $choice, $stored, true ) ? ' checked="checked"' : ''
-			);
-		}
-
-		printf(
-			'<input type="hidden" name="%1$s[]" value="%2$s"/></div>',
 			esc_attr( self::DRAWN_FIELD ),
 			esc_attr( $id )
 		);
@@ -348,12 +285,11 @@ final class Settings_Page {
 	 * is never read, so a crafted post cannot create an option. Structural rows
 	 * are skipped by the same 'is_option' flag the field list sets. A checkbox
 	 * that is absent was unchecked, because browsers send nothing for an
-	 * unchecked box; a multicheck with every box unchecked is likewise absent,
-	 * and stores the empty list.
+	 * unchecked box.
 	 *
 	 * @param array<int, array<string, mixed>> $fields Field definitions.
 	 * @param array<mixed>                     $posted The unslashed submission.
-	 * @return array<string, string|array<int, string>> Option id => value to store.
+	 * @return array<string, string> Option id => value to store.
 	 */
 	public static function sanitize_submission( array $fields, array $posted ): array {
 		$values = array();
@@ -369,17 +305,6 @@ final class Settings_Page {
 			if ( 'checkbox' === $type ) {
 				$raw           = $posted[ $id ] ?? null;
 				$values[ $id ] = is_string( $raw ) && 'yes' === $raw ? 'yes' : 'no';
-			}
-
-			if ( 'multicheck' === $type ) {
-				$raw     = $posted[ $id ] ?? array();
-				$choices = is_array( $field['options'] ?? null ) ? array_map( 'strval', array_keys( $field['options'] ) ) : array();
-
-				// Only the ids this field offers, each once: anything else in the
-				// list was not a box on this form.
-				$values[ $id ] = is_array( $raw )
-					? array_values( array_unique( array_intersect( array_filter( $raw, 'is_string' ), $choices ) ) )
-					: array();
 			}
 		}
 
