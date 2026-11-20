@@ -2,8 +2,8 @@
 
 Private WordPress plugin by RHINNO IT, based on `wp-plugin-template`: its first
 commit is the template at `634cb2b`, the fork point of every resync. It makes
-pages lighter and faster to deliver, and clears the page cache after changes.
-It runs on any WordPress site and adds a second half when WooCommerce is
+WordPress and WooCommerce pages load faster, and keeps the host's page cache
+fresh. It runs on any WordPress site and adds a second half when WooCommerce is
 active. It is never published on wordpress.org. Read this before writing code.
 
 Its features come from RHINNO IT - WP Optimizer 2.8.13

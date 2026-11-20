@@ -17,8 +17,8 @@ msgid "RHINNO IT - Optimizer"
 msgstr "RHINNO IT - Optimizer"
 
 #. Description of the plugin
-msgid "Makes pages lighter and faster to deliver, and clears the page cache after changes."
-msgstr "Hace que las páginas pesen menos y lleguen antes, y borra la caché de página al hacer cambios."
+msgid "Makes WordPress and WooCommerce pages load faster, and keeps the host's page cache fresh."
+msgstr "Hace que las páginas de WordPress y WooCommerce carguen más rápido, y mantiene al día la caché de páginas del hosting."
 
 #. Author of the plugin
 msgid "RHINNO IT"

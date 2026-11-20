@@ -12,7 +12,7 @@ msgid "RHINNO IT - Optimizer"
 msgstr ""
 
 #. Description of the plugin
-msgid "Makes pages lighter and faster to deliver, and clears the page cache after changes."
+msgid "Makes WordPress and WooCommerce pages load faster, and keeps the host's page cache fresh."
 msgstr ""
 
 #. Author of the plugin

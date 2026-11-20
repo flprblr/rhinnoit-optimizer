@@ -1,6 +1,6 @@
 {
 	"name": "rhinnoit/optimizer",
-	"description": "Makes pages lighter and faster to deliver, and clears the page cache after changes.",
+	"description": "Makes WordPress and WooCommerce pages load faster, and keeps the host's page cache fresh.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {

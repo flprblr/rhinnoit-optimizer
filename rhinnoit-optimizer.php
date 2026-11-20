@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:          RHINNO IT - Optimizer
- * Description:          Makes pages lighter and faster to deliver, and clears the page cache after changes.
+ * Description:          Makes WordPress and WooCommerce pages load faster, and keeps the host's page cache fresh.
  * Version:              1.0.0
  * Requires at least:    6.5
  * Requires PHP:         8.3

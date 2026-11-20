@@ -1,11 +1,11 @@
 # Optimizer
 
-Private WordPress plugin by RHINNO IT that makes pages lighter and faster to
-deliver, and clears the page cache after changes. It runs on any WordPress
-site, and adds a second set of corrections when WooCommerce is active. Built
-from `wp-plugin-template`, which carries the structure already solved
-(bootstrap, settings, assets, i18n, linters), so only the functional part is
-written here.
+Private WordPress plugin by RHINNO IT that makes WordPress and WooCommerce
+pages load faster, and keeps the host's page cache fresh. It runs on any
+WordPress site, and adds a second set of corrections when WooCommerce is
+active. Built from `wp-plugin-template`, which carries the structure already
+solved (bootstrap, settings, assets, i18n, linters), so only the functional
+part is written here.
 
 Requires **PHP 8.3+** and WordPress 6.5+. WooCommerce is optional; its half
 needs WooCommerce 8.0+.
