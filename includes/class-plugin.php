@@ -74,6 +74,12 @@ final class Plugin {
 	private function __construct() {
 		add_action( 'init', array( $this, 'load_textdomain' ) );
 
+		( new Delivery() )->register();
+		( new Viewport_Hero() )->register();
+		( new Housekeeping() )->register();
+		( new Databot_Loader() )->register();
+		( new Page_Cache() )->register();
+		( new Canonical_Redirect() )->register();
 		( new Assets() )->register();
 
 		// phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedIf -- The WooCommerce half of the shell, empty until a plugin has one.
@@ -122,6 +128,32 @@ final class Plugin {
 				)
 			)
 		);
+	}
+
+	/**
+	 * Whether the site runs on Kinsta, read from the constants of its MU plugin.
+	 *
+	 * Kinsta caches every anonymous page and skips its cache for a visitor
+	 * with a cart, and its MU plugin clears that cache on content changes:
+	 * the mini cart correction relies on the cart rule, and Page_Cache leaves
+	 * content to Kinsta. Must-use plugins
+	 * load before this one, so the constants are there when this is asked.
+	 * KINSTAMU_VERSION is deprecated since the MU plugin's 3.6 but still set.
+	 *
+	 * A site moved from Kinsta to cPanel sometimes keeps the MU plugin; where
+	 * cPanel's uapi is present, the host is cPanel whatever the constants say.
+	 *
+	 * @return bool
+	 */
+	public static function kinsta_is_active(): bool {
+		static $active = null;
+
+		if ( null === $active ) {
+			// phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- Under open_basedir a path outside it is a warning, not a false.
+			$active = ( defined( 'KINSTAMU_VERSION' ) || defined( 'Kinsta\KMP\VERSION' ) ) && ! @is_executable( Page_Cache::UAPI );
+		}
+
+		return $active;
 	}
 
 	/**

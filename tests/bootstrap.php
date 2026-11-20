@@ -44,7 +44,22 @@ if ( 'none' !== getenv( 'ROPT_TESTS_WC' ) ) {
 	define( 'WC_VERSION', (string) ( getenv( 'ROPT_TESTS_WC' ) ?: '11.0.1' ) );
 }
 define( 'HOUR_IN_SECONDS', 3600 );
+define( 'DAY_IN_SECONDS', 86400 );
+
+// Kinsta's MU plugin, for the cases that run on Kinsta: ROPT_TESTS_KINSTA=1.
+if ( '1' === getenv( 'ROPT_TESTS_KINSTA' ) ) {
+	define( 'KINSTAMU_VERSION', '3.7.0' );
+}
 define( 'WP_DEBUG', false );
+
+// Smush, for the cases that run with it loaded: ROPT_TESTS_SMUSH=1, or =api to load its Settings class too.
+if ( in_array( getenv( 'ROPT_TESTS_SMUSH' ), array( '1', 'api' ), true ) ) {
+	define( 'WP_SMUSH_VERSION', '4.3.3' );
+}
+
+if ( 'api' === getenv( 'ROPT_TESTS_SMUSH' ) ) {
+	require __DIR__ . '/stubs/smush.php';
+}
 
 /**
  * Mutable state the stubs read. Reset it from setUp().
@@ -94,6 +109,52 @@ final class WP_Stub {
 	 * @var array<int, array{0: string, 1: string|null, 2: string, 3: int}>
 	 */
 	public static array $registered = array();
+	public static bool $is_admin = true;
+	/** @var array<int, string> */
+	public static array $removed = array();
+	/** @var array<string, int> Same as $priorities, for remove_action(). */
+	public static array $removed_priorities = array();
+	/** @var array<int, string> Style handles registered and enqueued, in order. */
+	public static array $styles = array();
+	/** @var array<string, string> Inline CSS by handle. */
+	public static array $inline_styles = array();
+	public static string $upload_baseurl = 'https://shop.test/wp-content/uploads';
+	public static string $upload_basedir = '';
+	/** @var array<int, string> */
+	public static array $attached_files = array();
+	/** @var array<string, mixed> Hook => value apply_filters() returns instead of the one passed. */
+	public static array $filters = array();
+	public static mixed $featured_id = 0;
+	/** What get_queried_object_id() answers. */
+	public static int $queried_id = 0;
+	/** What get_the_ID() answers: the post of the loop being rendered, or false. */
+	public static mixed $the_id = false;
+	public static bool $in_the_loop = false;
+	public static bool $main_query = true;
+	/** @var array<int, string> "hook:callback" pairs has_action() says yes to. */
+	public static array $present_actions = array();
+	public static bool $block_theme = false;
+	/** Whether the active theme ships a theme.json, for wp_theme_has_theme_json(). */
+	public static bool $theme_json = false;
+	/** @var array<int, string> Every _doing_it_wrong() call, as "function: message". */
+	public static array $doing_it_wrong = array();
+	/** @var array<string, int> Scheduled single events, hook => timestamp. */
+	public static array $scheduled = array();
+	/** @var array<string, array<int, mixed>> Arguments of the last event scheduled on each hook. */
+	public static array $scheduled_args = array();
+	/** @var array<int, string> Post types is_post_type_viewable() says yes to. */
+	public static array $viewable_types = array( 'post', 'page', 'product', 'porto_builder' );
+	/** @var array<int, string> Taxonomies is_taxonomy_viewable() says yes to. */
+	public static array $viewable_taxonomies = array( 'category', 'product_cat' );
+	/** @var array<string, array<int, string>> Taxonomy => the post types it belongs to. */
+	public static array $taxonomy_types = array( 'pa_color' => array( 'product' ) );
+	public static bool $doing_cron = false;
+	/** What home_url( '/' ) answers. */
+	public static string $home_url = 'https://shop.test/';
+	/** @var array<int, mixed> Answers wp_remote_get() hands out in turn; an empty queue answers 200 with no headers. */
+	public static array $remote_responses = array();
+	/** @var array<int, string> URLs wp_remote_get() was asked for. */
+	public static array $remote_requests = array();
 	/** @var array<int, array<string, mixed>> */
 	public static array $menu = array();
 	/**
@@ -149,6 +210,33 @@ final class WP_Stub {
 		self::$page_hooks = array();
 		self::$page_type  = 'product';
 
+		self::$is_admin           = true;
+		self::$removed            = array();
+		self::$removed_priorities = array();
+		self::$styles             = array();
+		self::$inline_styles      = array();
+		self::$filters            = array();
+		self::$featured_id        = 0;
+		self::$queried_id         = 0;
+		self::$the_id             = false;
+		self::$in_the_loop        = false;
+		self::$main_query         = true;
+		self::$present_actions    = array();
+		self::$block_theme        = false;
+		self::$theme_json         = false;
+		self::$doing_it_wrong     = array();
+		// Core's stack of running hooks, which apply_filters() pushes and pops.
+		$GLOBALS['wp_current_filter'] = array();
+		self::$scheduled           = array();
+		self::$scheduled_args      = array();
+		self::$viewable_types      = array( 'post', 'page', 'product', 'porto_builder' );
+		self::$viewable_taxonomies = array( 'category', 'product_cat' );
+		self::$taxonomy_types      = array( 'pa_color' => array( 'product' ) );
+		self::$doing_cron          = false;
+		self::$home_url            = 'https://shop.test/';
+		self::$remote_responses    = array();
+		self::$remote_requests     = array();
+
 		self::$caps_checked = array();
 		self::$json_fails = false;
 		self::$can        = true;
@@ -164,6 +252,44 @@ final class WP_Stub {
 
 /** Thrown in place of wp_die()/exit so tests can assert on it. */
 final class WP_Halt extends RuntimeException {}
+
+/** Stands in for the purge object Kinsta's MU plugin hangs off $kinsta_cache. */
+final class Kinsta_Purge_Stub {
+	public int $calls = 0;
+	/** @var array<int, array<int, mixed>> Arguments of each call. */
+	public array $arguments = array();
+	/** Kinsta's own one-full-purge-per-request flag. */
+	public bool $purge_all_happened = false;
+	/** @var array<int, int> Post ids passed to initiate_purge(). */
+	public array $single = array();
+	public function initiate_purge( $post_id ) { $this->single[] = (int) $post_id; return true; }
+	public function purge_complete_caches(): void {
+		$this->arguments[] = func_get_args();
+		if ( $this->purge_all_happened ) { return; }
+		$this->purge_all_happened = true;
+		++$this->calls;
+	}
+}
+
+/** A Kinsta purge object from a version without the per-post purge. */
+final class Kinsta_Full_Purge_Only_Stub {
+	public int $calls = 0;
+	public bool $purge_all_happened = false;
+	public function purge_complete_caches(): void { ++$this->calls; }
+}
+
+/** The slice of WP_Taxonomy the page cache reads. */
+final class WP_Taxonomy { /** @var array<int, string> */ public array $object_type = array(); }
+
+/** The slice of WP_Post the page cache reads. */
+class WP_Post { public int $ID = 0; public string $post_type = 'post'; public function __construct( int $id = 0, string $post_type = 'post' ) { $this->ID = $id; $this->post_type = $post_type; } }
+
+if ( ! class_exists( 'WP_Error' ) ) {
+	/**
+	 * Core's error object: the page cache only asks whether an answer is one.
+	 */
+	class WP_Error {}
+}
 
 function __( $text ) { return $text; }
 function esc_html__( $text ) { return $text; }
@@ -191,7 +317,13 @@ function sanitize_key( $key ) {
 function sanitize_title( $title ) { return strtolower( str_replace( ' ', '-', (string) $title ) ); }
 function admin_url( $path ) { return '/wp-admin/' . $path; }
 function add_query_arg( $key, $value, $url ) { return $url . ( str_contains( $url, '?' ) ? '&' : '?' ) . "$key=$value"; }
-function is_admin() { return true; }
+function remove_query_arg( $key, $url ) { return (string) strtok( $url, '?' ); }
+function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
+function wp_parse_str( $input_string, &$result ) { parse_str( (string) $input_string, $result ); }
+function wp_basename( $path ) { return basename( $path ); }
+function wp_upload_dir() { return array( 'baseurl' => WP_Stub::$upload_baseurl, 'basedir' => WP_Stub::$upload_basedir ); }
+function get_attached_file( $id ) { return WP_Stub::$attached_files[ $id ] ?? false; }
+function is_admin() { return WP_Stub::$is_admin; }
 function load_plugin_textdomain( $domain, $abs, $path ) { return true; }
 
 function get_option( $key, $default_value = false ) { return WP_Stub::$options[ $key ] ?? $default_value; }
@@ -209,13 +341,26 @@ function ropt_stub_register( $hook, $cb, $priority, $args ) {
 }
 function add_action( $hook, $cb, $priority = 10, $args = 1 ) { ropt_stub_register( $hook, $cb, $priority, $args ); }
 function add_filter( $hook, $cb, $priority = 10, $args = 1 ) { ropt_stub_register( $hook, $cb, $priority, $args ); }
+function remove_action( $hook, $cb, $priority = 10 ) { WP_Stub::$removed[] = $hook . ':' . ( is_string( $cb ) ? $cb : 'closure' ); WP_Stub::$removed_priorities[ $hook . ':' . ( is_string( $cb ) ? $cb : 'closure' ) ] = $priority; return true; }
+function has_action( $hook, $callback = false ) { return in_array( $hook . ':' . ( is_string( $callback ) ? $callback : '' ), WP_Stub::$present_actions, true ) ? 10 : false; }
+function apply_filters( $hook, $value, ...$args ) { return array_key_exists( $hook, WP_Stub::$filters ) ? WP_Stub::$filters[ $hook ] : $value; }
+function __return_empty_string() { return ''; }
 
 function wp_json_encode( $data ) { return WP_Stub::$json_fails ? false : json_encode( $data ); }
 function wp_enqueue_script( $handle, $src, $deps, $ver, $args ) { WP_Stub::$enqueued[] = compact( 'handle', 'deps', 'ver' ); }
-function wp_enqueue_style( $handle, $src = '', $deps = array(), $ver = false ) {}
+function wp_enqueue_style( $handle, $src = '', $deps = array(), $ver = false ) { WP_Stub::$styles[] = 'enqueue:' . $handle; }
+function wp_register_style( $handle, $src, $deps = array(), $ver = false ) { WP_Stub::$styles[] = 'register:' . $handle . ':' . var_export( $src, true ); return true; }
+function wp_add_inline_style( $handle, $data ) { WP_Stub::$inline_styles[ (string) $handle ] = (string) $data; return true; }
 function wp_style_add_data( $handle, $key, $value ) {}
 function wp_set_script_translations( $handle, $domain, $path ) { WP_Stub::$enqueued[] = array( 'handle' => $handle . ':i18n' ); }
 function wp_add_inline_script( $handle, $js, $position ) { WP_Stub::$inline[] = $js; }
+function wp_print_inline_script_tag( $data, $attributes = array() ) {
+	$attrs = '';
+	foreach ( (array) $attributes as $name => $value ) {
+		$attrs .= ' ' . $name . '="' . esc_attr( $value ) . '"';
+	}
+	echo '<script' . $attrs . '>' . $data . '</script>';
+}
 function wp_nonce_field( $action ) { WP_Stub::$nonce_action = (string) $action; echo '<input type="hidden" name="_wpnonce" value="stub"/>'; }
 function submit_button( $text = '', $type = 'primary', $name = 'submit' ) { echo '<input type="submit" value="Save Changes"/>'; }
 
@@ -226,6 +371,29 @@ function check_admin_referer( $action ) {
 }
 function wp_die( $message ) { throw new WP_Halt( $message ); }
 function do_action( $hook, ...$args ) { WP_Stub::$fired[] = array_merge( array( $hook ), $args ); }
+function is_post_type_viewable( $type ) { return in_array( $type, WP_Stub::$viewable_types, true ); }
+function is_taxonomy_viewable( $taxonomy ) { return in_array( $taxonomy, WP_Stub::$viewable_taxonomies, true ); }
+function get_stylesheet() { return 'porto-child'; }
+function get_taxonomy( $taxonomy ) {
+	if ( ! isset( WP_Stub::$taxonomy_types[ $taxonomy ] ) ) { return false; }
+	$object              = new WP_Taxonomy();
+	$object->object_type = WP_Stub::$taxonomy_types[ $taxonomy ];
+	return $object;
+}
+function wp_doing_cron() { return WP_Stub::$doing_cron; }
+function wp_remote_get( $url, $args = array() ) { WP_Stub::$remote_requests[] = (string) $url; return array() !== WP_Stub::$remote_responses ? array_shift( WP_Stub::$remote_responses ) : array( 'response' => array( 'code' => 200 ), 'headers' => array() ); }
+function wp_remote_retrieve_response_code( $response ) { return is_array( $response ) ? ( $response['response']['code'] ?? '' ) : ''; }
+function wp_remote_retrieve_header( $response, $header ) { return is_array( $response ) ? ( array_change_key_case( (array) ( $response['headers'] ?? array() ) )[ strtolower( (string) $header ) ] ?? '' ) : ''; }
+if ( ! function_exists( 'is_wp_error' ) ) {
+	function is_wp_error( $thing ) { return $thing instanceof WP_Error; }
+}
+function home_url( $path = '' ) { return rtrim( WP_Stub::$home_url, '/' ) . '/' . ltrim( (string) $path, '/' ); }
+function wp_next_scheduled( $hook ) { return WP_Stub::$scheduled[ $hook ] ?? false; }
+function wp_schedule_single_event( $timestamp, $hook, $args = array() ) { WP_Stub::$scheduled[ $hook ] = (int) $timestamp; WP_Stub::$scheduled_args[ $hook ] = $args; return true; }
+function wp_unschedule_event( $timestamp, $hook ) { unset( WP_Stub::$scheduled[ $hook ] ); return true; }
+// As core does, only the events whose arguments match are cleared.
+function wp_clear_scheduled_hook( $hook, $args = array() ) { if ( ( WP_Stub::$scheduled_args[ $hook ] ?? array() ) === $args ) { unset( WP_Stub::$scheduled[ $hook ], WP_Stub::$scheduled_args[ $hook ] ); } return 0; }
+function wp_unschedule_hook( $hook ) { unset( WP_Stub::$scheduled[ $hook ], WP_Stub::$scheduled_args[ $hook ] ); return 0; }
 function wp_safe_redirect( $url ) { WP_Stub::$redirect = $url; throw new WP_Halt( 'redirect' ); }
 
 function add_menu_page( $page_title, $menu_title, $cap, $slug, $cb = '', $icon = '', $position = null ) {
@@ -295,6 +463,34 @@ function remove_submenu_page( $menu_slug, $submenu_slug ) {
 	return false;
 }
 
+function wp_is_block_theme() { return WP_Stub::$block_theme; }
+function wp_theme_has_theme_json() { return WP_Stub::$theme_json; }
+function _doing_it_wrong( $function_name, $message, $version ) { WP_Stub::$doing_it_wrong[] = $function_name . ': ' . $message; }
+
+/*
+ * The two core functions the HTML API's set_attribute() calls, as core has
+ * them: the attributes whose value is a URL, and the Unicode noncharacters an
+ * attribute name may not hold.
+ */
+function wp_kses_uri_attributes() {
+	return array( 'action', 'archive', 'background', 'cite', 'classid', 'codebase', 'data', 'formaction', 'href', 'icon', 'longdesc', 'manifest', 'poster', 'profile', 'src', 'usemap', 'xmlns' );
+}
+function wp_has_noncharacters( string $text ): bool {
+	return 1 === preg_match( '~\xEF(?:\xB7[\x90-\xAF]|\xBF[\xBE\xBF])|(?:\xF0[\x9F\xAF\xBF]|[\xF1-\xF3][\x8F\x9F\xAF\xBF]|\xF4\x8F)\xBF[\xBE\xBF]~', $text );
+}
+
+/** The parent theme's directory: Porto's, unless the process runs with ROPT_TESTS_PORTO=none. */
+function get_template() { return function_exists( 'porto_minicart' ) ? 'porto' : 'twentytwentyfive'; }
+
+function get_queried_object_id() { return WP_Stub::$queried_id; }
+// Speculative loading, from WordPress 6.8; ROPT_TESTS_WP=6.6 boots a site from before it.
+if ( '6.6' !== getenv( 'ROPT_TESTS_WP' ) ) {
+	function wp_get_speculation_rules_configuration() { return array( 'mode' => 'prefetch', 'eagerness' => 'conservative' ); }
+}
+function get_the_ID() { return WP_Stub::$the_id; }
+function in_the_loop() { return WP_Stub::$in_the_loop; }
+function is_main_query() { return WP_Stub::$main_query; }
+
 /*
  * The WooCommerce screens are WordPress pages too, and the shop is one whenever
  * its page is what got queried. Modelling that is the point: on a real shop a
@@ -328,6 +524,25 @@ function is_singular( $type = '' ) {
  */
 if ( defined( 'WC_VERSION' ) ) {
 	require_once __DIR__ . '/stubs/woocommerce.php';
+}
+
+// Porto, which every shop runs; ROPT_TESTS_PORTO=none boots a site without it.
+if ( 'none' !== getenv( 'ROPT_TESTS_PORTO' ) ) {
+	require_once __DIR__ . '/stubs/porto.php';
+}
+
+/*
+ * WordPress's HTML API, which Viewport_Hero parses the page content with.
+ * Core loads it on every request since 6.5; tests/stubs/html-api/ holds the
+ * classes the Tag Processor needs, copied unchanged from WordPress 7.1.2
+ * (wp-includes/html-api/ and wp-includes/class-wp-token-map.php), so the
+ * cases run the real parser rather than a stand-in. Loaded only when missing:
+ * a harness that loads a site's own core first is tested against that one.
+ */
+if ( ! class_exists( 'WP_HTML_Tag_Processor', false ) ) {
+	foreach ( array( 'class-wp-token-map.php', 'html5-named-character-references.php', 'class-wp-html-decoder.php', 'class-wp-html-attribute-token.php', 'class-wp-html-span.php', 'class-wp-html-text-replacement.php', 'class-wp-html-tag-processor.php' ) as $ropt_html_api_file ) {
+		require_once __DIR__ . '/stubs/html-api/' . $ropt_html_api_file;
+	}
 }
 
 $GLOBALS['admin_page_hooks'] = &WP_Stub::$page_hooks;

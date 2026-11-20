@@ -120,6 +120,21 @@ final class SettingsPageTest extends TestCase {
 	}
 
 	/**
+	 * The form shows one card per thing the shop runs, in order.
+	 *
+	 * @return void
+	 */
+	public function test_a_shop_sees_a_card_per_domain(): void {
+		$html = $this->form();
+
+		$this->assertStringContainsString( '<h2 class="ropt-card__title">WordPress</h2>', $html );
+		$this->assertSame( 2, substr_count( $html, '<section class="ropt-card">' ), 'The master switch, then one card per domain with a switch to offer.' );
+		$this->assertSame( 1, substr_count( $html, '<h2' ), 'The master switch has no heading of its own.' );
+		$this->assertSame( substr_count( $html, '<section' ), substr_count( $html, '</section>' ), 'Every card closes what it opened.' );
+		$this->assertSame( substr_count( $html, '<div' ), substr_count( $html, '</div>' ), 'Every row closes what it opened.' );
+	}
+
+	/**
 	 * Every checkbox is drawn as an on/off switch, and its row label toggles it.
 	 *
 	 * Still a real checkbox, so the save logic above does not change; the role
@@ -132,11 +147,25 @@ final class SettingsPageTest extends TestCase {
 		$html       = $this->form();
 		$checkboxes = substr_count( $html, 'type="checkbox"' );
 
-		$this->assertSame( 1, $checkboxes, 'The master switch alone.' );
+		$this->assertSame( 15, $checkboxes, 'One switch per optimization that can apply, plus the master switch: not the page cache one on a site without a cache to clear.' );
 		$this->assertSame( $checkboxes, substr_count( $html, 'type="checkbox" role="switch" class="ropt-switch"' ) );
-		$this->assertStringContainsString( '<label class="ropt-row__label" for="ropt_enabled">Enable</label>', $html );
+		$this->assertStringContainsString( '<label class="ropt-row__label" for="ropt_enabled">Apply the optimizations</label>', $html );
 		$this->assertStringContainsString( 'aria-describedby="ropt_enabled-desc"', $html );
 		$this->assertStringContainsString( '<p class="ropt-row__desc" id="ropt_enabled-desc">', $html );
+	}
+
+	/**
+	 * A group label is printed once, above the first switch of its run.
+	 *
+	 * @return void
+	 */
+	public function test_a_group_label_heads_its_run_once(): void {
+		$html = $this->form();
+
+		$this->assertSame( 1, substr_count( $html, '<h3 class="ropt-card__group">Page head</h3>' ) );
+		$this->assertLessThan( strpos( $html, 'for="ropt_head_rsd"' ), strpos( $html, '>Page head</h3>' ) );
+		$this->assertGreaterThan( strpos( $html, 'for="ropt_classic_theme_styles"' ), strpos( $html, '>Page head</h3>' ) );
+		$this->assertSame( 6, substr_count( $html, '<h3 class="ropt-card__group">' ), 'The six groups of the WordPress card.' );
 	}
 
 	/**
@@ -243,7 +272,7 @@ final class SettingsPageTest extends TestCase {
 	public function test_every_drawn_option_carries_its_marker(): void {
 		$html = $this->form();
 
-		foreach ( array( 'ropt_enabled' ) as $id ) {
+		foreach ( array( 'ropt_enabled', 'ropt_srcset_prune', 'ropt_speculative_moderate' ) as $id ) {
 			$this->assertSame( 1, substr_count( $html, sprintf( 'name="ropt_drawn[]" value="%s"', $id ) ), sprintf( '%s is drawn once, so it is marked once.', $id ) );
 		}
 

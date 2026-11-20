@@ -74,6 +74,17 @@ final class Install {
 	}
 
 	/**
+	 * Runs on deactivation: drops the clear this plugin may have scheduled.
+	 *
+	 * @return void
+	 */
+	public static function deactivate(): void {
+		wp_clear_scheduled_hook( Page_Cache::EVENT );
+		// Scheduled with arguments, which wp_clear_scheduled_hook() would have to match.
+		wp_unschedule_hook( Page_Cache::VERIFY );
+	}
+
+	/**
 	 * Writes any missing option and records the version.
 	 *
 	 * Existing values are left untouched: add_option() only writes when absent.

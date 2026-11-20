@@ -37,6 +37,13 @@ final class BootTest extends TestCase {
 		foreach (
 			array(
 				'init:load_textdomain',
+				'wp_calculate_image_srcset:drop_oversized_copies',
+				'the_content:preload_heroes',
+				'wp_speculation_rules_configuration:prefetch_on_hover',
+				'pings_open:__return_false',
+				'wp_footer:print_chat',
+				'shutdown:flush',
+				'redirect_canonical:drop_same_url',
 				'admin_enqueue_scripts:enqueue_admin',
 				'admin_init:check_version',
 				'admin_menu:register_pages',

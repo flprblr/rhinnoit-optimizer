@@ -42,6 +42,30 @@ final class PluginTest extends TestCase {
 		}
 	}
 
+	public function test_defaults_come_from_the_field_definition(): void {
+		$this->assertSame(
+			array(
+				'ropt_enabled'              => 'yes',
+				'ropt_srcset_prune'         => 'yes',
+				'ropt_lazy_first_only'      => 'yes',
+				'ropt_viewport_hero'        => 'yes',
+				'ropt_font_inline'          => 'yes',
+				'ropt_css_versioning'       => 'yes',
+				'ropt_global_styles'        => 'yes',
+				'ropt_classic_theme_styles' => 'yes',
+				'ropt_speculative_moderate' => 'yes',
+				'ropt_head_rsd'             => 'yes',
+				'ropt_head_shortlink'       => 'yes',
+				'ropt_head_oembed'          => 'yes',
+				'ropt_head_generator'       => 'yes',
+				'ropt_pingbacks'            => 'yes',
+				'ropt_page_cache_clear'     => 'yes',
+				'ropt_same_url_redirect'    => 'yes',
+			),
+			Settings::defaults()
+		);
+	}
+
 	public function test_every_structural_field_is_flagged_so_it_cannot_become_an_option(): void {
 		$structural = 0;
 
@@ -110,9 +134,17 @@ final class PluginTest extends TestCase {
 
 		Install::check_version();
 
-		$this->assertSame( 'no', WP_Stub::$options['ropt_enabled'] );
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_enabled'] );
 		$this->assertSame( ROPT_VERSION, WP_Stub::$options[ Install::VERSION_OPTION ] );
 		$this->assertContains( array( Install::DIRTY_HOOK, 'site' ), WP_Stub::$fired, 'New code can print every page differently, and a copied build fires no upgrader hook.' );
+	}
+
+	public function test_deactivation_drops_the_scheduled_clear(): void {
+		WP_Stub::$scheduled['ropt_page_cache_run'] = time() + 60;
+
+		Install::deactivate();
+
+		$this->assertSame( array(), WP_Stub::$scheduled );
 	}
 
 	public function test_a_current_version_does_no_work(): void {

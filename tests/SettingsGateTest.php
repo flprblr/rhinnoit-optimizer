@@ -1,19 +1,23 @@
 <?php
 /**
- * The master switch and the per-feature switches read through it.
+ * The master switch, the per-feature switches read through it, and stepping
+ * aside for the Porto wizard.
  *
  * Every feature reads its own switch through Settings::feature() in its
- * register(), so a mistake here is silent: the feature simply never hooks, or
- * hooks with the plugin switched off.
+ * register(), and none may repeat work the theme already does, so a mistake
+ * here is silent: the feature simply never hooks, hooks with the plugin
+ * switched off, or hooks twice.
  *
  * @package RhinnoIT\Optimizer
  */
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RhinnoIT\Optimizer\Delivery;
 use RhinnoIT\Optimizer\Settings;
 
 #[CoversClass( Settings::class )]
+#[CoversClass( Delivery::class )]
 final class SettingsGateTest extends TestCase {
 
 	/**
@@ -23,6 +27,15 @@ final class SettingsGateTest extends TestCase {
 	 */
 	protected function setUp(): void {
 		WP_Stub::$options = array();
+	}
+
+	/**
+	 * A feature with no stored value falls back to its declared default.
+	 *
+	 * @return void
+	 */
+	public function test_an_unconfigured_feature_uses_its_declared_default(): void {
+		$this->assertTrue( Settings::feature( 'srcset_prune' ), 'Delivery ships on.' );
 	}
 
 	/**
@@ -85,5 +98,65 @@ final class SettingsGateTest extends TestCase {
 
 			$this->assertFalse( Settings::feature( 'feature_a' ), sprintf( 'Read as on for %s.', var_export( $stored, true ) ) );
 		}
+	}
+
+	/**
+	 * A site without Porto never reports anything as covered.
+	 *
+	 * @return void
+	 */
+	public function test_a_site_without_porto_covers_nothing(): void {
+		$this->assertFalse( Delivery::porto_covers( 'swap' ) );
+		$this->assertFalse( Delivery::porto_covers( 'lazyload' ) );
+	}
+
+	/**
+	 * An option that is not an array does not fatal.
+	 *
+	 * The wizard writes an array, but another plugin or a half-finished import
+	 * can leave anything there, and this runs on every storefront request.
+	 *
+	 * @return void
+	 */
+	public function test_a_malformed_porto_option_does_not_fatal(): void {
+		foreach ( array( 'a string', 42, null, false ) as $value ) {
+			WP_Stub::$options['porto_settings_optimize'] = $value;
+
+			$this->assertFalse( Delivery::porto_covers( 'swap' ) );
+		}
+	}
+
+	/**
+	 * A wizard option that is on is reported as covered.
+	 *
+	 * @return void
+	 */
+	public function test_an_enabled_wizard_option_is_covered(): void {
+		WP_Stub::$options['porto_settings_optimize'] = array(
+			'swap'     => true,
+			'lazyload' => true,
+		);
+
+		$this->assertTrue( Delivery::porto_covers( 'swap' ) );
+		$this->assertTrue( Delivery::porto_covers( 'lazyload' ) );
+		$this->assertFalse( Delivery::porto_covers( 'minify_css' ), 'A key that is absent is not covered.' );
+	}
+
+	/**
+	 * A wizard option present but off is not covered.
+	 *
+	 * Porto stores the unchecked state as false rather than dropping the key,
+	 * so presence alone cannot be the test.
+	 *
+	 * @return void
+	 */
+	public function test_a_wizard_option_that_is_off_is_not_covered(): void {
+		WP_Stub::$options['porto_settings_optimize'] = array(
+			'swap'     => false,
+			'lazyload' => '',
+		);
+
+		$this->assertFalse( Delivery::porto_covers( 'swap' ) );
+		$this->assertFalse( Delivery::porto_covers( 'lazyload' ) );
 	}
 }

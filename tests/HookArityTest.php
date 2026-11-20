@@ -23,6 +23,12 @@ final class HookArityTest extends TestCase {
 		}
 
 		$services = array(
+			new RhinnoIT\Optimizer\Delivery(),
+			new RhinnoIT\Optimizer\Viewport_Hero(),
+			new RhinnoIT\Optimizer\Housekeeping(),
+			new RhinnoIT\Optimizer\Databot_Loader(),
+			new RhinnoIT\Optimizer\Page_Cache(),
+			new RhinnoIT\Optimizer\Canonical_Redirect(),
 			new RhinnoIT\Optimizer\Assets(),
 			new RhinnoIT\Optimizer\Admin\Menu(),
 			new RhinnoIT\Optimizer\Admin\Plugin_Links(),
@@ -45,9 +51,12 @@ final class HookArityTest extends TestCase {
 			++$checked;
 		}
 
-		// The listed services hook six methods: Assets 1, Menu 3, Settings_Page
-		// 1 through Menu, and Plugin_Links 1. Fewer means the list above lost a
-		// service; raise it with every service added, lower it with one removed.
-		$this->assertGreaterThanOrEqual( 6, $checked, 'Most hooks went unchecked, so this case proves little.' );
+		// The listed services hook 41 methods: Delivery 7, Viewport_Hero 3,
+		// Housekeeping 2 (its two core callbacks are names, skipped above),
+		// Databot_Loader 1, Page_Cache 21, Canonical_Redirect 1, Assets 1, Menu
+		// 3, Settings_Page 1 through Menu, and Plugin_Links 1. Fewer means the
+		// list above lost a service; raise it with every service added, lower it
+		// with one removed.
+		$this->assertGreaterThanOrEqual( 41, $checked, 'Most hooks went unchecked, so this case proves little.' );
 	}
 }

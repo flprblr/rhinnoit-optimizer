@@ -25,6 +25,29 @@ final class Settings {
 	const string REQUIRES_WOOCOMMERCE = 'woocommerce';
 
 	/**
+	 * A switch that needs a page cache the plugin can clear: Kinsta, or cPanel's uapi with ea-nginx.
+	 *
+	 * The one mark that is not the correction's own stop: Page_Cache clears
+	 * wherever uapi runs, as a cage can hide ea-nginx from PHP. See Page_Cache::NGINX.
+	 */
+	const string NEEDS_HOST_CACHE = 'host_cache';
+
+	/**
+	 * A switch that needs a classic theme: block themes are built on what it removes.
+	 */
+	const string NEEDS_CLASSIC_THEME = 'classic_theme';
+
+	/**
+	 * A switch that needs a theme without theme.json: with one, core adds nothing to remove.
+	 */
+	const string NEEDS_NO_THEME_JSON = 'no_theme_json';
+
+	/**
+	 * A switch that needs core's speculative loading, from WordPress 6.8.
+	 */
+	const string NEEDS_SPECULATION_RULES = 'speculation_rules';
+
+	/**
 	 * Keys of the switches removed outright, without the prefix.
 	 *
 	 * A switch removed with nothing to inherit it goes here, so its row stays
@@ -67,9 +90,9 @@ final class Settings {
 			array(
 				'id'      => self::OPTION_PREFIX . 'enabled',
 				'type'    => 'checkbox',
-				'title'   => __( 'Enable', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Apply the optimizations', 'rhinnoit-optimizer' ),
 				'desc'    => __( 'If you turn it off, everything below stops, without deactivating the plugin.', 'rhinnoit-optimizer' ),
-				'default' => 'no',
+				'default' => 'yes',
 			),
 			array(
 				'id'        => self::OPTION_PREFIX . 'general',
@@ -82,6 +105,130 @@ final class Settings {
 				'type'      => 'title',
 				'title'     => __( 'WordPress', 'rhinnoit-optimizer' ),
 				'is_option' => false,
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'srcset_prune',
+				'type'    => 'checkbox',
+				'group'   => __( 'Images', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Drop heavier image copies', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Stops browsers from downloading an image copy that weighs more than a larger one.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'lazy_first_only',
+				'type'    => 'checkbox',
+				'group'   => __( 'Images', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Load images later, except the first', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Makes only the first image load right away, not the first three.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'viewport_hero',
+				'type'    => 'checkbox',
+				'group'   => __( 'Images', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Preload each screen\'s own banner', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'If a page starts with separate banners for phones and larger screens, each screen downloads only its own.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'font_inline',
+				'type'    => 'checkbox',
+				'group'   => __( 'Fonts and CSS', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Embed font stylesheets in the page', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Saves a download per small sheet and shows text while the font loads.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'css_versioning',
+				'type'    => 'checkbox',
+				'group'   => __( 'Fonts and CSS', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Avoid outdated styles in browsers', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Browsers download generated styles again when they change, instead of using old copies.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'global_styles',
+				'type'    => 'checkbox',
+				'group'   => __( 'Block styles', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Remove global styles', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Removes some block editor styles from every page, so pages weigh less. Check pages made with blocks.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+				'needs'   => array( self::NEEDS_CLASSIC_THEME ),
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'classic_theme_styles',
+				'type'    => 'checkbox',
+				'group'   => __( 'Block styles', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Remove block button styles', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Removes a small stylesheet WordPress adds for buttons made with blocks. Check pages with buttons.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+				'needs'   => array( self::NEEDS_CLASSIC_THEME, self::NEEDS_NO_THEME_JSON ),
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'speculative_moderate',
+				'type'    => 'checkbox',
+				'group'   => __( 'Navigation', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Preload pages on hover', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Starts loading a link when the pointer rests on it, so the page often opens faster.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+				'needs'   => array( self::NEEDS_SPECULATION_RULES ),
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'head_rsd',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page head', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Remove the RSD link', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Removes from the page code a link that old blogging apps used.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'head_shortlink',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page head', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Remove the shortlink', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Removes a short version of the page\'s address from the page code.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'head_oembed',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page head', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Remove the oEmbed links', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'If another WordPress site embeds one of your pages, it shows a plain link, not a card.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'head_generator',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page head', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Remove the version tags', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Removes the tags with your WordPress and WooCommerce versions from the page code and feeds.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'pingbacks',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page head', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Disable pingbacks and trackbacks', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Blocks the automatic notices other blogs send when they link to you, a common spam route.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'page_cache_clear',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page cache', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Clear the cache after changes', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'When you change content, menus or theme options, or update plugins, visitors soon see it.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
+				'needs'   => array( self::NEEDS_HOST_CACHE ),
+			),
+			array(
+				'id'      => self::OPTION_PREFIX . 'same_url_redirect',
+				'type'    => 'checkbox',
+				'group'   => __( 'Page cache', 'rhinnoit-optimizer' ),
+				'title'   => __( 'Avoid redirects to the same page', 'rhinnoit-optimizer' ),
+				'desc'    => __( 'Keeps the cache from sending every visitor to an ad\'s link.', 'rhinnoit-optimizer' ),
+				'default' => 'yes',
 			),
 			array(
 				'id'        => self::OPTION_PREFIX . 'wordpress',
@@ -226,8 +373,12 @@ final class Settings {
 	 */
 	public static function conditions(): array {
 		return array(
-			''                         => true,
-			self::REQUIRES_WOOCOMMERCE => Plugin::woocommerce_is_supported(),
+			''                            => true,
+			self::REQUIRES_WOOCOMMERCE    => Plugin::woocommerce_is_supported(),
+			self::NEEDS_HOST_CACHE        => ( new Page_Cache() )->can_clear(),
+			self::NEEDS_CLASSIC_THEME     => ! wp_is_block_theme(),
+			self::NEEDS_NO_THEME_JSON     => ! wp_theme_has_theme_json(),
+			self::NEEDS_SPECULATION_RULES => function_exists( 'wp_get_speculation_rules_configuration' ),
 		);
 	}
 

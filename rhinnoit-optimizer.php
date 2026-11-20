@@ -42,6 +42,7 @@ define( 'ROPT_MENU_TITLE', 'Optimizer' );
 require_once ROPT_PATH . 'includes/autoload.php';
 
 register_activation_hook( ROPT_FILE, array( Install::class, 'activate' ) );
+register_deactivation_hook( ROPT_FILE, array( Install::class, 'deactivate' ) );
 
 // Feature flags must be declared before WooCommerce boots.
 add_action( 'before_woocommerce_init', array( Plugin::class, 'declare_woocommerce_compatibility' ) );

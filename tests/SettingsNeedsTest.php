@@ -13,17 +13,27 @@
  * brings its own cases here too: its field hidden where the mark is missing,
  * drawn where it is there, and its stored value kept either way.
  *
+ * The shared process is a Porto shop on a host with no page cache the plugin
+ * can clear, without Kinsta, on a classic theme with no theme.json and a
+ * WordPress with speculative loading. The cases that need Kinsta or an older
+ * core run in their own process: SettingsOnKinstaTest and
+ * SettingsBeforeSpeculationRulesTest.
+ *
  * @package RhinnoIT\Optimizer
  */
 
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RhinnoIT\Optimizer\Admin\Settings_Page;
+use RhinnoIT\Optimizer\Page_Cache;
+use RhinnoIT\Optimizer\Plugin;
 use RhinnoIT\Optimizer\Settings;
 
 /**
  * Covers the marks of Settings::available_fields().
  */
 #[CoversClass( Settings::class )]
+#[CoversClass( Settings_Page::class )]
 final class SettingsNeedsTest extends TestCase {
 
 	/**
@@ -148,6 +158,133 @@ final class SettingsNeedsTest extends TestCase {
 
 		$this->assertSame( array(), self::ids_for( array( '' => true, 'shop' => false ), $rows ) );
 		$this->assertSame( array( 'ropt_shop', 'ropt_cart', 'ropt_shop' ), self::ids_for( array( '' => true, 'shop' => true ), $rows ) );
+	}
+
+	/**
+	 * Without a page cache it can clear, its switch is not offered; the rest is.
+	 *
+	 * @return void
+	 */
+	public function test_a_switch_that_cannot_act_here_is_not_on_the_screen(): void {
+		$this->assertFalse( Plugin::kinsta_is_active(), 'The process is on Kinsta, or this case means nothing.' );
+		$this->assertFalse( ( new Page_Cache() )->can_clear(), 'The process can clear a page cache, or this case means nothing.' );
+
+		$ids = self::drawn();
+
+		foreach ( array( 'ropt_page_cache_clear' ) as $id ) {
+			$this->assertNotContains( $id, $ids, sprintf( '%s does nothing on this site.', $id ) );
+		}
+
+		foreach ( array( 'ropt_global_styles', 'ropt_classic_theme_styles', 'ropt_speculative_moderate', 'ropt_same_url_redirect' ) as $id ) {
+			$this->assertContains( $id, $ids, sprintf( '%s can act here.', $id ) );
+		}
+	}
+
+	/**
+	 * A block theme is built on the styles both block-style switches remove.
+	 *
+	 * @return void
+	 */
+	public function test_a_block_theme_is_offered_neither_block_style_switch(): void {
+		WP_Stub::$block_theme = true;
+
+		$ids = self::drawn();
+
+		$this->assertNotContains( 'ropt_global_styles', $ids );
+		$this->assertNotContains( 'ropt_classic_theme_styles', $ids );
+		$this->assertContains( 'ropt_srcset_prune', $ids, 'The rest of the card stays.' );
+	}
+
+	/**
+	 * Core adds no classic theme styles for a theme with theme.json; global styles stay.
+	 *
+	 * @return void
+	 */
+	public function test_a_theme_json_hides_only_the_classic_theme_styles(): void {
+		WP_Stub::$theme_json = true;
+
+		$ids = self::drawn();
+
+		$this->assertNotContains( 'ropt_classic_theme_styles', $ids );
+		$this->assertContains( 'ropt_global_styles', $ids );
+	}
+
+	/**
+	 * A hidden group leaves no label behind on the form.
+	 *
+	 * @return void
+	 */
+	public function test_a_group_with_every_switch_hidden_has_no_label(): void {
+		WP_Stub::$block_theme = true;
+
+		ob_start();
+		( new Settings_Page() )->render();
+		$html = (string) ob_get_clean();
+
+		$this->assertStringNotContainsString( '>Block styles</h3>', $html );
+		$this->assertSame( 1, substr_count( $html, '>Page cache</h3>' ), 'The WordPress card keeps the redirect switch; the WooCommerce card has none left.' );
+	}
+
+	/**
+	 * A post naming a hidden switch cannot write it, and its value is kept.
+	 *
+	 * @return void
+	 */
+	public function test_a_hidden_switch_keeps_its_value_whatever_the_post_says(): void {
+		$posted = array(
+			'ropt_page_cache_clear'    => 'yes',
+			'ropt_srcset_prune'        => 'yes',
+			Settings_Page::DRAWN_FIELD => array( 'ropt_page_cache_clear', 'ropt_srcset_prune' ),
+		);
+
+		$values = Settings_Page::sanitize_submission( Settings_Page::fields_to_save( Settings::available_fields(), $posted ), $posted );
+
+		$this->assertSame( array( 'ropt_srcset_prune' => 'yes' ), $values );
+	}
+
+	/**
+	 * Hiding a switch never changes what it does: a hidden one still reads its row.
+	 *
+	 * @return void
+	 */
+	public function test_hiding_is_only_the_screen(): void {
+		WP_Stub::$options['ropt_page_cache_clear'] = 'no';
+
+		$this->assertNotContains( 'ropt_page_cache_clear', self::drawn() );
+		$this->assertFalse( Settings::feature( 'page_cache_clear' ) );
+		$this->assertContains( 'ropt_page_cache_clear', Settings::option_ids(), 'Still an option: seeded, migrated and uninstalled.' );
+	}
+
+	/**
+	 * A cPanel shop is offered the page cache switch.
+	 *
+	 * @return void
+	 */
+	public function test_a_cpanel_shop_is_offered_the_page_cache_switches(): void {
+		$dir = sys_get_temp_dir() . '/ropt-uapi-' . uniqid();
+		mkdir( $dir );
+		file_put_contents( $dir . '/uapi', "#!/bin/sh\nexit 0\n" );
+		chmod( $dir . '/uapi', 0755 );
+		touch( $dir . '/ea-nginx.conf' );
+
+		$ids     = array_column( Settings::fields_for_marks( Settings::fields(), array_merge( Settings::conditions(), array( Settings::NEEDS_HOST_CACHE => ( new Page_Cache( $dir . '/uapi', 20, false, array( $dir . '/ea-nginx.conf' ) ) )->can_clear() ) ) ), 'id' );
+		$without = array_column( Settings::fields_for_marks( Settings::fields(), array_merge( Settings::conditions(), array( Settings::NEEDS_HOST_CACHE => ( new Page_Cache( $dir . '/uapi', 20, false, array( $dir . '/missing.conf' ) ) )->can_clear() ) ) ), 'id' );
+
+		unlink( $dir . '/ea-nginx.conf' );
+		unlink( $dir . '/uapi' );
+		rmdir( $dir );
+
+		$this->assertContains( 'ropt_page_cache_clear', $ids );
+		$this->assertNotContains( 'ropt_page_cache_clear', $without, 'A cPanel server without ea-nginx has no NGINX cache to clear.' );
+	}
+
+	/**
+	 * Ids of the fields this site's screen draws.
+	 *
+	 * @return array<int, string>
+	 */
+	private static function drawn(): array {
+		return array_column( Settings::available_fields(), 'id' );
 	}
 
 	/**

@@ -46,7 +46,7 @@ msgid "Optimizer is running, but its WooCommerce half needs WooCommerce %s or hi
 msgstr ""
 
 #: includes/class-settings.php
-msgid "Enable"
+msgid "Apply the optimizations"
 msgstr ""
 
 #: includes/class-settings.php
@@ -55,6 +55,150 @@ msgstr ""
 
 #: includes/class-settings.php
 msgid "WordPress"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Images"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Drop heavier image copies"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Stops browsers from downloading an image copy that weighs more than a larger one."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Load images later, except the first"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Makes only the first image load right away, not the first three."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Preload each screen's own banner"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "If a page starts with separate banners for phones and larger screens, each screen downloads only its own."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Fonts and CSS"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Embed font stylesheets in the page"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Saves a download per small sheet and shows text while the font loads."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Avoid outdated styles in browsers"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Browsers download generated styles again when they change, instead of using old copies."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Block styles"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Remove global styles"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Removes some block editor styles from every page, so pages weigh less. Check pages made with blocks."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Remove block button styles"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Removes a small stylesheet WordPress adds for buttons made with blocks. Check pages with buttons."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Navigation"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Preload pages on hover"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Starts loading a link when the pointer rests on it, so the page often opens faster."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Page head"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Remove the RSD link"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Removes from the page code a link that old blogging apps used."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Remove the shortlink"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Removes a short version of the page's address from the page code."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Remove the oEmbed links"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "If another WordPress site embeds one of your pages, it shows a plain link, not a card."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Remove the version tags"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Removes the tags with your WordPress and WooCommerce versions from the page code and feeds."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Disable pingbacks and trackbacks"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Blocks the automatic notices other blogs send when they link to you, a common spam route."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Page cache"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Clear the cache after changes"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "When you change content, menus or theme options, or update plugins, visitors soon see it."
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Avoid redirects to the same page"
+msgstr ""
+
+#: includes/class-settings.php
+msgid "Keeps the cache from sending every visitor to an ad's link."
 msgstr ""
 
 #: includes/class-settings.php

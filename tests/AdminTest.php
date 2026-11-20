@@ -269,6 +269,21 @@ final class AdminTest extends TestCase {
 		$this->assertStringNotContainsString( 'nav-tab', $html, 'One screen does not need a tab bar.' );
 	}
 
+	public function test_a_save_leaves_every_undrawn_option_alone(): void {
+		// A field the form did not draw is absent from the post, exactly like
+		// an unchecked box. Only the drawn list tells them apart.
+		WP_Stub::$options['ropt_css_versioning'] = 'yes';
+
+		$_POST = array(
+			'ropt_srcset_prune' => 'yes',
+			'ropt_drawn'        => array( 'ropt_srcset_prune' ),
+		);
+
+		$this->save();
+
+		$this->assertSame( 'yes', WP_Stub::$options['ropt_css_versioning'] );
+	}
+
 	public function test_saving_requires_the_capability(): void {
 		WP_Stub::$can = false;
 
@@ -310,15 +325,16 @@ final class AdminTest extends TestCase {
 		WP_Stub::$options['ropt_enabled'] = 'no';
 
 		// What a browser posts: the checked boxes, and the list of fields the
-		// form drew.
+		// form drew. css_versioning was drawn and left unchecked, so it is absent.
 		$_POST = array(
 			'ropt_enabled' => 'yes',
-			'ropt_drawn'   => array( 'ropt_enabled' ),
+			'ropt_drawn'   => array( 'ropt_enabled', 'ropt_css_versioning' ),
 		);
 
 		$this->save();
 
 		$this->assertSame( 'yes', WP_Stub::$options['ropt_enabled'] ?? null, 'A checked box is stored.' );
+		$this->assertSame( 'no', WP_Stub::$options['ropt_css_versioning'] ?? null, 'A box the browser did not send was unchecked.' );
 		$this->assertContains( array( Settings_Page::SAVED_HOOK ), WP_Stub::$fired, 'The group hears every save, or the page cache serves the old pages.' );
 		$this->assertStringContainsString( 'page=' . Menu::PAGE_SLUG, (string) WP_Stub::$redirect );
 		$this->assertStringContainsString( 'updated=1', (string) WP_Stub::$redirect );

@@ -35,7 +35,9 @@ final class BootWithOldWooCommerceTest extends TestCase {
 
 		$this->assertContains( 'admin_notices', WP_Stub::$hooks, 'The shop is told why half is missing.' );
 		$this->assertContains( 'admin_enqueue_scripts:enqueue_admin', WP_Stub::$callbacks, 'And still gets the half that does not need WooCommerce.' );
+		$this->assertContains( 'wp_calculate_image_srcset', WP_Stub::$hooks );
 		$this->assertNotContains( 'ropt_woocommerce', array_column( Settings::available_fields(), 'id' ), 'The WooCommerce section stays off on a version it does not support.' );
+		$this->assertContains( 'ropt_srcset_prune', array_column( Settings::available_fields(), 'id' ) );
 
 		// Supported decides what the plugin does with WooCommerce; active
 		// decides only what exists. An old version is the one place they differ.

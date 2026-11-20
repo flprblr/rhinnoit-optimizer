@@ -51,8 +51,8 @@ msgid "Optimizer is running, but its WooCommerce half needs WooCommerce %s or hi
 msgstr "Optimizer está funcionando, pero su mitad de WooCommerce necesita WooCommerce %s o superior."
 
 #: includes/class-settings.php
-msgid "Enable"
-msgstr "Activar"
+msgid "Apply the optimizations"
+msgstr "Aplicar las optimizaciones"
 
 #: includes/class-settings.php
 msgid "If you turn it off, everything below stops, without deactivating the plugin."
@@ -61,6 +61,150 @@ msgstr "Si lo apagas, todo lo de abajo se detiene, sin desactivar el plugin."
 #: includes/class-settings.php
 msgid "WordPress"
 msgstr "WordPress"
+
+#: includes/class-settings.php
+msgid "Images"
+msgstr "Imágenes"
+
+#: includes/class-settings.php
+msgid "Drop heavier image copies"
+msgstr "Descartar copias de imagen más pesadas"
+
+#: includes/class-settings.php
+msgid "Stops browsers from downloading an image copy that weighs more than a larger one."
+msgstr "Evita que el navegador descargue una copia de imagen que pesa más que otra más grande."
+
+#: includes/class-settings.php
+msgid "Load images later, except the first"
+msgstr "Cargar después las imágenes salvo la primera"
+
+#: includes/class-settings.php
+msgid "Makes only the first image load right away, not the first three."
+msgstr "Hace que solo la primera imagen cargue de inmediato, no las tres primeras."
+
+#: includes/class-settings.php
+msgid "Preload each screen's own banner"
+msgstr "Precargar el banner de cada pantalla"
+
+#: includes/class-settings.php
+msgid "If a page starts with separate banners for phones and larger screens, each screen downloads only its own."
+msgstr "Si una página empieza con banners distintos para teléfonos y pantallas grandes, cada pantalla descarga solo el suyo."
+
+#: includes/class-settings.php
+msgid "Fonts and CSS"
+msgstr "Fuentes y CSS"
+
+#: includes/class-settings.php
+msgid "Embed font stylesheets in the page"
+msgstr "Incrustar las hojas de fuentes"
+
+#: includes/class-settings.php
+msgid "Saves a download per small sheet and shows text while the font loads."
+msgstr "Ahorra una descarga por cada hoja pequeña y muestra el texto mientras carga la fuente."
+
+#: includes/class-settings.php
+msgid "Avoid outdated styles in browsers"
+msgstr "Evitar estilos viejos en el navegador"
+
+#: includes/class-settings.php
+msgid "Browsers download generated styles again when they change, instead of using old copies."
+msgstr "El navegador vuelve a descargar los estilos generados cuando cambian, en vez de usar los viejos."
+
+#: includes/class-settings.php
+msgid "Block styles"
+msgstr "Estilos de bloques"
+
+#: includes/class-settings.php
+msgid "Remove global styles"
+msgstr "Quitar los estilos globales"
+
+#: includes/class-settings.php
+msgid "Removes some block editor styles from every page, so pages weigh less. Check pages made with blocks."
+msgstr "Quita de cada página unos estilos del editor de bloques, para que pese menos. Revisa las páginas hechas con bloques."
+
+#: includes/class-settings.php
+msgid "Remove block button styles"
+msgstr "Quitar estilos de botones de bloque"
+
+#: includes/class-settings.php
+msgid "Removes a small stylesheet WordPress adds for buttons made with blocks. Check pages with buttons."
+msgstr "Quita una pequeña hoja de estilos que WordPress incluye para los botones hechos con bloques. Revisa las páginas con botones."
+
+#: includes/class-settings.php
+msgid "Navigation"
+msgstr "Navegación"
+
+#: includes/class-settings.php
+msgid "Preload pages on hover"
+msgstr "Precargar páginas al pasar el cursor"
+
+#: includes/class-settings.php
+msgid "Starts loading a link when the pointer rests on it, so the page often opens faster."
+msgstr "Empieza a cargar un enlace al posar el cursor encima, así la página suele abrirse más rápido."
+
+#: includes/class-settings.php
+msgid "Page head"
+msgstr "Cabecera de la página"
+
+#: includes/class-settings.php
+msgid "Remove the RSD link"
+msgstr "Quitar el enlace RSD"
+
+#: includes/class-settings.php
+msgid "Removes from the page code a link that old blogging apps used."
+msgstr "Quita del código de la página un enlace que usaban antiguos programas para escribir en blogs."
+
+#: includes/class-settings.php
+msgid "Remove the shortlink"
+msgstr "Quitar el enlace corto"
+
+#: includes/class-settings.php
+msgid "Removes a short version of the page's address from the page code."
+msgstr "Quita del código de la página una versión corta de su dirección."
+
+#: includes/class-settings.php
+msgid "Remove the oEmbed links"
+msgstr "Quitar los enlaces oEmbed"
+
+#: includes/class-settings.php
+msgid "If another WordPress site embeds one of your pages, it shows a plain link, not a card."
+msgstr "Si otro sitio WordPress inserta una de tus páginas, mostrará un enlace simple, no una tarjeta."
+
+#: includes/class-settings.php
+msgid "Remove the version tags"
+msgstr "Quitar las etiquetas de versión"
+
+#: includes/class-settings.php
+msgid "Removes the tags with your WordPress and WooCommerce versions from the page code and feeds."
+msgstr "Quita del código de la página y de los feeds las etiquetas con tu versión de WordPress y WooCommerce."
+
+#: includes/class-settings.php
+msgid "Disable pingbacks and trackbacks"
+msgstr "Desactivar pingbacks y trackbacks"
+
+#: includes/class-settings.php
+msgid "Blocks the automatic notices other blogs send when they link to you, a common spam route."
+msgstr "Bloquea los avisos automáticos que envían otros blogs al enlazarte, una vía común de spam."
+
+#: includes/class-settings.php
+msgid "Page cache"
+msgstr "Caché de página"
+
+#: includes/class-settings.php
+msgid "Clear the cache after changes"
+msgstr "Borrar la caché al hacer cambios"
+
+#: includes/class-settings.php
+msgid "When you change content, menus or theme options, or update plugins, visitors soon see it."
+msgstr "Cuando cambias contenido, menús u opciones del tema, o actualizas plugins, los visitantes lo ven pronto."
+
+#: includes/class-settings.php
+msgid "Avoid redirects to the same page"
+msgstr "Evitar redirecciones a la misma página"
+
+#: includes/class-settings.php
+msgid "Keeps the cache from sending every visitor to an ad's link."
+msgstr "Impide que la caché envíe a cada visitante al enlace de un anuncio."
 
 #: includes/class-settings.php
 msgid "WooCommerce"

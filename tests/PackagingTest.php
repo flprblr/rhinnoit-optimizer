@@ -128,4 +128,28 @@ final class PackagingTest extends TestCase {
 			);
 		}
 	}
+
+	public function test_deactivation_and_uninstall_leave_no_page_cache_behind(): void {
+		$root      = dirname( __DIR__ );
+		$main      = (string) file_get_contents( $root . '/rhinnoit-optimizer.php' );
+		$uninstall = (string) file_get_contents( $root . '/uninstall.php' );
+		$source    = (string) file_get_contents( $root . '/includes/class-page-cache.php' );
+
+		$this->assertStringContainsString( "register_deactivation_hook( ROPT_FILE, array( Install::class, 'deactivate' ) );", $main, 'A pending clear would outlive the plugin.' );
+		$this->assertStringContainsString( "'" . RhinnoIT\Optimizer\Page_Cache::STATE . "'", $uninstall );
+		$this->assertStringContainsString( "wp_clear_scheduled_hook( '" . RhinnoIT\Optimizer\Page_Cache::EVENT . "' )", $uninstall );
+		$this->assertStringContainsString( "wp_unschedule_hook( '" . RhinnoIT\Optimizer\Page_Cache::VERIFY . "' )", $uninstall, 'A pending check, scheduled with arguments, would outlive the plugin.' );
+
+		// The failures run_uapi() returns, and the one logged by name.
+		preg_match_all( "/return array\\( '([a-z_]+)', /", $source, $keys );
+		preg_match_all( "/'ropt_page_cache_([a-z_]+)'/", $source, $direct );
+
+		foreach ( array_unique( array_merge( array_filter( $keys[1] ), $direct[1] ) ) as $key ) {
+			if ( in_array( $key, array( 'state', 'run', 'dirty', 'verify' ), true ) ) {
+				continue;
+			}
+
+			$this->assertStringContainsString( "'" . $key . "'", $uninstall, sprintf( 'The ropt_page_cache_%s log window survives uninstall.', $key ) );
+		}
+	}
 }
