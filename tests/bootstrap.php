@@ -27,7 +27,7 @@ register_shutdown_function(
 define( 'ABSPATH', $sandbox . '/' );
 define( 'ROPT_PATH', $sandbox . '/' );
 define( 'ROPT_URL', 'https://shop.test/wp-content/plugins/rhinnoit-optimizer/' );
-define( 'ROPT_VERSION', '1.0.0' );
+define( 'ROPT_VERSION', '2.0.0' );
 define( 'ROPT_FILE', $sandbox . '/rhinnoit-optimizer.php' );
 define( 'ROPT_BASENAME', 'rhinnoit-optimizer/rhinnoit-optimizer.php' );
 define( 'ROPT_MENU_PARENT_SLUG', 'rhinnoit-tools' );

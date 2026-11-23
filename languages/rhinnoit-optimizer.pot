@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: RHINNO IT - Optimizer 1.0.0\n"
+"Project-Id-Version: RHINNO IT - Optimizer 2.0.0\n"
 "Report-Msgid-Bugs-To: dev@rhinnoit.cloud\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"

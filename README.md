@@ -151,9 +151,9 @@ to a fresh install and to a switch added by an update; a site that already
 saved the screen keeps its choices, and a site that ran WP Optimizer starts
 from the choices it made there.
 
-The version numbers below (2.x) are WP Optimizer's releases, where these
-corrections were written and measured. This plugin starts at 1.0.0 with the
-code of 2.8.13.
+The versions in the rows below are WP Optimizer's releases, where these
+corrections were written and measured, unless a row names this plugin. This
+plugin starts at 2.0.0, with the code of WP Optimizer 2.8.13.
 
 **WordPress** - on any site:
 
@@ -629,9 +629,10 @@ WordPress and `composer dist` read the header; `Install::check_version()` reads
 the constant, and a mismatch means the upgrade path silently
 stops re-seeding new options. `tests/PackagingTest.php` fails when they drift.
 
-Bump both on every release of this plugin. It started at 1.0.0, the number the
-template gives a new plugin, with the corrections of WP Optimizer 2.8.13: a
-version that starts with 2 in this README is WP Optimizer's.
+Bump both on every release of this plugin. It started at 2.0.0 (owner's
+decision, 2026-11-23; the template gives a new plugin 1.0.0), with the
+corrections of WP Optimizer 2.8.13. A version this README names is WP
+Optimizer's unless it names this plugin.
 
 ## PHP version
 

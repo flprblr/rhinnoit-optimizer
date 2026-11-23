@@ -2,7 +2,7 @@
 /**
  * Plugin Name:          RHINNO IT - Optimizer
  * Description:          Makes WordPress and WooCommerce pages load faster, and keeps the host's page cache fresh.
- * Version:              1.0.0
+ * Version:              2.0.0
  * Requires at least:    6.5
  * Requires PHP:         8.3
  * Author:               RHINNO IT
@@ -22,7 +22,7 @@ namespace RhinnoIT\Optimizer;
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'ROPT_VERSION', '1.0.0' );
+define( 'ROPT_VERSION', '2.0.0' );
 define( 'ROPT_FILE', __FILE__ );
 define( 'ROPT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'ROPT_URL', plugin_dir_url( __FILE__ ) );

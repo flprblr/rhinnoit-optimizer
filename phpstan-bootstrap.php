@@ -8,7 +8,7 @@
  * @package RhinnoIT\Optimizer
  */
 
-define( 'ROPT_VERSION', '1.0.0' );
+define( 'ROPT_VERSION', '2.0.0' );
 define( 'ROPT_FILE', __FILE__ );
 define( 'ROPT_PATH', __DIR__ . '/' );
 define( 'ROPT_URL', 'https://example.test/wp-content/plugins/rhinnoit-optimizer/' );
