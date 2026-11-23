@@ -6,7 +6,7 @@
  * Requires at least:    6.5
  * Requires PHP:         8.3
  * Author:               RHINNO IT
- * Author URI:           mailto:dev@rhinnoit.cloud
+ * Author URI:           https://rhinnoit.cloud/
  * License:              GPL-2.0-or-later
  * License URI:          https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:          rhinnoit-optimizer

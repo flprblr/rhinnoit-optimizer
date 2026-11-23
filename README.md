@@ -614,7 +614,7 @@ cold cache this plugin's code needs about 1.1G.
   updates should the slug collide with a public plugin.
 - There is no `Plugin URI`: it is the public website of the plugin and WordPress
   renders it as a link on the plugins list. `Author URI` points to
-  `mailto:dev@rhinnoit.cloud`, so the author name becomes a contact link.
+  `https://rhinnoit.cloud/`, so the author name links to RHINNO IT's site.
 - No `readme.txt` is needed: only the wordpress.org directory uses it.
 - `load_plugin_textdomain()` **is** needed: WordPress only resolves the
   translations on its own for plugins hosted on wordpress.org.

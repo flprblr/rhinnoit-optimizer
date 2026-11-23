@@ -20,7 +20,7 @@ msgid "RHINNO IT"
 msgstr ""
 
 #. Author URI of the plugin
-msgid "mailto:dev@rhinnoit.cloud"
+msgid "https://rhinnoit.cloud/"
 msgstr ""
 
 #: includes/admin/class-plugin-links.php
